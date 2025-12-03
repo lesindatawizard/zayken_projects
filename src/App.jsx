@@ -6,7 +6,7 @@ import Footer from "./Components/Footer";
 import QuotePopup from "./Components/QuotePopup";
 
 // Pages
-import Home from "./pages/home";
+import Home from "./pages/Home";
 import About from "./pages/About";
 import Projects from "./pages/Projects";
 import Services from "./pages/Services";
