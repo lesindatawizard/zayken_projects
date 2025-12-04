@@ -8,19 +8,23 @@ export default function QuotePopup() {
     name: "",
     email: "",
     phone: "",
-    type: "", // commercial | residential | fnb
+    type: "",
     projectLocation: "",
     message: "",
+    attachments: [],
+
     // commercial specifics
     commercialSpaceType: "",
     commercialSpaceTypeOther: "",
-    commercialScope: [], // multi checkbox
+    commercialScope: [],
     commercialScopeOther: "",
+
     // residential specifics
     propertyType: "",
     propertyTypeOther: "",
     residentialScope: [],
     residentialScopeOther: "",
+
     // fnb specifics
     fnbType: "",
     fnbTypeOther: "",
@@ -32,19 +36,18 @@ export default function QuotePopup() {
   const [touched, setTouched] = useState({});
   const [errors, setErrors] = useState({});
 
-  // reset the form whenever the popup is opened (requirement #1)
+  // Reset everything when popup opens
   useEffect(() => {
     if (isQuoteOpen) {
       setForm({ ...emptyForm });
       setTouched({});
       setErrors({});
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isQuoteOpen]);
 
   if (!isQuoteOpen) return null;
 
-  // lists (as you confirmed)
+  // Option Lists
   const commercialSpaceOptions = ["Office", "Retail", "Clinic", "Warehouse", "Other"];
   const commercialScopeOptions = [
     "Full Fit-out",
@@ -72,14 +75,7 @@ export default function QuotePopup() {
     "Other",
   ];
 
-  const fnbTypeOptions = [
-    "Restaurant",
-    "Café",
-    "Juice Shop",
-    "Bakery",
-    "Cloud Kitchen",
-    "Others",
-  ];
+  const fnbTypeOptions = ["Restaurant", "Café", "Juice Shop", "Bakery", "Cloud Kitchen", "Others"];
   const fnbScopeOptions = [
     "Full Fit-out",
     "MEP Works",
@@ -92,7 +88,7 @@ export default function QuotePopup() {
     "Other",
   ];
 
-  // simple validators
+  // Validation Rules
   const validators = {
     name: (v) => (v.trim().length ? "" : "Name is required"),
     email: (v) =>
@@ -110,31 +106,38 @@ export default function QuotePopup() {
     type: (v) => (v ? "" : "Please select a client type"),
     projectLocation: (v) => (v.trim() ? "" : "Project location is required"),
     message: (v) => (v.trim() ? "" : "Please provide project requirements"),
-    // no strict validation for optional scope lists and other-types (can add if needed)
   };
 
   function validateField(fieldName, value) {
-    if (validators[fieldName]) return validators[fieldName](value);
-    return "";
+    return validators[fieldName] ? validators[fieldName](value) : "";
   }
 
   function runValidationForAll() {
     const newErrors = {};
-    Object.keys(validators).forEach((k) => {
-      const err = validateField(k, form[k]);
-      if (err) newErrors[k] = err;
+    Object.keys(validators).forEach((key) => {
+      const err = validateField(key, form[key]);
+      if (err) newErrors[key] = err;
     });
     setErrors(newErrors);
     return newErrors;
   }
 
+  // Handle Input Changes
   function handleChange(e) {
-    const { name, value, type, checked } = e.target;
+    const { name, value, type, checked, files } = e.target;
 
-    // handle checkbox groups for scopes: they are arrays in form state
+    // Handle file uploads
+    if (type === "file") {
+      setForm((prev) => ({
+        ...prev,
+        attachments: Array.from(files),
+      }));
+      return;
+    }
+
+    // Handle checkbox group
     if (type === "checkbox" && name.startsWith("scope_")) {
-      // name format: scope_commercial, scope_residential, scope_fnb
-      const group = name.split("_")[1]; // 'commercial' etc
+      const group = name.split("_")[1];
       const key =
         group === "commercial"
           ? "commercialScope"
@@ -143,23 +146,23 @@ export default function QuotePopup() {
           : "fnbScope";
 
       setForm((prev) => {
-        const current = new Set(prev[key]);
-        if (checked) current.add(value);
-        else current.delete(value);
-        return { ...prev, [key]: Array.from(current) };
+        const s = new Set(prev[key]);
+        if (checked) s.add(value);
+        else s.delete(value);
+        return { ...prev, [key]: Array.from(s) };
       });
+
       return;
     }
 
-    // set simple values
+    // Normal update
     setForm((prev) => ({ ...prev, [name]: value }));
 
-    // if changing the primary type, clear the other-type fields to avoid leftover values
+    // If switching type, reset conditional sections
     if (name === "type") {
       setForm((prev) => ({
         ...prev,
         type: value,
-        // clear other-type details
         commercialSpaceType: "",
         commercialSpaceTypeOther: "",
         commercialScope: [],
@@ -175,7 +178,7 @@ export default function QuotePopup() {
       }));
     }
 
-    // If user selects a non-Other option where there is an *_Other field, clear it:
+    // Clear other-type fields when not applicable
     if (name === "commercialSpaceType" && value !== "Other")
       setForm((p) => ({ ...p, commercialSpaceTypeOther: "" }));
     if (name === "propertyType" && value !== "Others")
@@ -183,71 +186,61 @@ export default function QuotePopup() {
     if (name === "fnbType" && value !== "Others")
       setForm((p) => ({ ...p, fnbTypeOther: "" }));
 
-    // clear error on change for this field
+    // Clear error on typing
     setErrors((prev) => ({ ...prev, [name]: "" }));
   }
 
+  // Mark as touched + validate
   function handleBlur(e) {
     const { name } = e.target;
     setTouched((t) => ({ ...t, [name]: true }));
-    const err = validateField(name, form[name]);
-    setErrors((prev) => ({ ...prev, [name]: err }));
+    setErrors((prev) => ({ ...prev, [name]: validateField(name, form[name]) }));
   }
 
-  function handleCheckboxBlur(groupName) {
-    // when moving away after touching a scope group, mark as touched
-    setTouched((t) => ({ ...t, [groupName]: true }));
-    // currently not required; if you want required, validate here
-  }
-
+  // Submit
   function handleSubmit(e) {
     e.preventDefault();
     const newErrors = runValidationForAll();
-    if (Object.keys(newErrors).length) {
-      // focus first error field
-      const firstErr = Object.keys(newErrors)[0];
-      // you can add focus logic here if desired
-      return;
-    }
+    if (Object.keys(newErrors).length) return;
 
-    // At this point form is valid. You can send it to your backend / emailjs / Firebase etc.
-    // For now, we'll console.log and close the popup.
     console.log("Submitting quote request:", form);
-    // TODO: replace with real submit logic (API call / emailjs / DB)
     closeQuote();
   }
 
-  // input base style + error handling
+  // Input styles
   const inputBase =
     "h-12 rounded-lg border p-3 text-gray-800 focus:outline-none focus:ring-2 focus:border-brand-sky-blue";
   const inputError = "border-red-500 ring-1 ring-red-200";
 
   return (
     <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
-      {/* dark overlay */}
+      {/* Overlay */}
       <div className="absolute inset-0 bg-black/50" onClick={closeQuote} />
 
-      {/* popup */}
+      {/* Popup */}
       <div className="relative w-full max-w-3xl bg-white rounded-xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
-        {/* header */}
-        <div className="flex items-center justify-between border-b border-gray-300 p-6 bg-white">
-          <div className="flex flex-col">
-            <h1 className="text-2xl font-bold text-gray-900">Get a Free Quote</h1>
-            <p className="text-gray-600 text-base mt-1">
-              Fill out the form below and our team will get back to you shortly.
-            </p>
-          </div>
-          <button
-            onClick={closeQuote}
-            className="flex h-10 w-10 items-center justify-center rounded-full text-gray-500 hover:bg-gray-200"
-          >
-            <span className="material-symbols-outlined text-2xl">close</span>
-          </button>
-        </div>
+        {/* Header */}
+<div className="flex items-center justify-between border-b border-gray-300 p-6 bg-white">
+  <div className="flex flex-col">
+    <h1 className="text-2xl font-bold text-gray-900">Get a Free Quote</h1>
 
-        {/* form */}
+    {/* ← ADD THIS PARAGRAPH */}
+    <p className="text-gray-600 text-base mt-1">
+      Fill out the form below and our team will get back to you shortly.
+    </p>
+  </div>
+
+  <button
+    onClick={closeQuote}
+    className="flex h-10 w-10 items-center justify-center rounded-full text-gray-500 hover:bg-gray-200"
+  >
+    <span className="material-symbols-outlined text-2xl">close</span>
+  </button>
+</div>
+
+        {/* Form */}
         <form className="p-6 overflow-y-auto flex-1" onSubmit={handleSubmit} noValidate>
-          {/* grid */}
+          {/* Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Name */}
             <label className="flex flex-col">
@@ -259,8 +252,10 @@ export default function QuotePopup() {
                 value={form.name}
                 onChange={handleChange}
                 onBlur={handleBlur}
-                className={`${inputBase} ${errors.name && touched.name ? inputError : "border-gray-300"}`}
                 placeholder="Enter your full name"
+                className={`${inputBase} ${
+                  errors.name && touched.name ? inputError : "border-gray-300"
+                }`}
               />
               {errors.name && touched.name && (
                 <p className="text-sm text-red-600 mt-1">{errors.name}</p>
@@ -278,8 +273,10 @@ export default function QuotePopup() {
                 value={form.email}
                 onChange={handleChange}
                 onBlur={handleBlur}
-                className={`${inputBase} ${errors.email && touched.email ? inputError : "border-gray-300"}`}
                 placeholder="you@example.com"
+                className={`${inputBase} ${
+                  errors.email && touched.email ? inputError : "border-gray-300"
+                }`}
               />
               {errors.email && touched.email && (
                 <p className="text-sm text-red-600 mt-1">{errors.email}</p>
@@ -296,8 +293,10 @@ export default function QuotePopup() {
                 value={form.phone}
                 onChange={handleChange}
                 onBlur={handleBlur}
-                className={`${inputBase} ${errors.phone && touched.phone ? inputError : "border-gray-300"}`}
-                placeholder="(123) 456-7890"
+                placeholder="+968 0000 0000"
+                className={`${inputBase} ${
+                  errors.phone && touched.phone ? inputError : "border-gray-300"
+                }`}
               />
               {errors.phone && touched.phone && (
                 <p className="text-sm text-red-600 mt-1">{errors.phone}</p>
@@ -314,20 +313,23 @@ export default function QuotePopup() {
                 value={form.type}
                 onChange={handleChange}
                 onBlur={handleBlur}
-                className={`${inputBase} ${errors.type && touched.type ? inputError : "border-gray-300"}`}
+                className={`${inputBase} ${
+                  errors.type && touched.type ? inputError : "border-gray-300"
+                }`}
               >
                 <option value="">Select client type</option>
                 <option value="commercial">Commercial</option>
                 <option value="residential">Residential</option>
                 <option value="fnb">F&B</option>
               </select>
+
               {errors.type && touched.type && (
                 <p className="text-sm text-red-600 mt-1">{errors.type}</p>
               )}
             </label>
           </div>
 
-          {/* Project Location (required) */}
+          {/* Project Location */}
           <div className="mt-4">
             <label className="flex flex-col">
               <span className="text-sm font-medium text-gray-800 mb-2">
@@ -338,24 +340,32 @@ export default function QuotePopup() {
                 value={form.projectLocation}
                 onChange={handleChange}
                 onBlur={handleBlur}
-                className={`${inputBase} w-full ${errors.projectLocation && touched.projectLocation ? inputError : "border-gray-300"}`}
                 placeholder="City / Area / Site address"
+                className={`${inputBase} w-full ${
+                  errors.projectLocation && touched.projectLocation
+                    ? inputError
+                    : "border-gray-300"
+                }`}
               />
               {errors.projectLocation && touched.projectLocation && (
-                <p className="text-sm text-red-600 mt-1">{errors.projectLocation}</p>
+                <p className="text-sm text-red-600 mt-1">
+                  {errors.projectLocation}
+                </p>
               )}
             </label>
           </div>
 
-          {/* Conditional sections based on client type */}
+          {/* COMMERCIAL SECTION */}
           {form.type === "commercial" && (
             <section className="mt-6">
               <h4 className="font-semibold mb-2">Commercial Details</h4>
 
-              {/* Type of Commercial Space */}
+              {/* Space Type */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <label className="flex flex-col">
-                  <span className="text-sm font-medium text-gray-800 mb-2">Type of Commercial Space</span>
+                  <span className="text-sm font-medium text-gray-800 mb-2">
+                    Type of Commercial Space
+                  </span>
                   <select
                     name="commercialSpaceType"
                     value={form.commercialSpaceType}
@@ -364,31 +374,34 @@ export default function QuotePopup() {
                   >
                     <option value="">Select</option>
                     {commercialSpaceOptions.map((opt) => (
-                      <option key={opt} value={opt === "Other" ? "Other" : opt}>
+                      <option key={opt} value={opt}>
                         {opt}
                       </option>
                     ))}
                   </select>
                 </label>
 
-                {/* other textbox (only editable when Other selected) */}
                 {form.commercialSpaceType === "Other" && (
                   <label className="flex flex-col">
-                    <span className="text-sm font-medium text-gray-800 mb-2">Please specify</span>
+                    <span className="text-sm font-medium text-gray-800 mb-2">
+                      Please specify
+                    </span>
                     <input
                       name="commercialSpaceTypeOther"
                       value={form.commercialSpaceTypeOther}
                       onChange={handleChange}
                       className={`${inputBase} border-gray-300`}
-                      placeholder="Type here..."
                     />
                   </label>
                 )}
               </div>
 
-              {/* Scope of Work (checkbox list) */}
+              {/* Scope */}
               <div className="mt-4">
-                <span className="text-sm font-medium text-gray-800 mb-2 block">Scope of Work</span>
+                <span className="text-sm font-medium text-gray-800 mb-2 block">
+                  Scope of Work
+                </span>
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {commercialScopeOptions.map((opt) => (
                     <label key={opt} className="inline-flex items-center gap-2">
@@ -398,7 +411,6 @@ export default function QuotePopup() {
                         value={opt}
                         checked={form.commercialScope.includes(opt)}
                         onChange={handleChange}
-                        onBlur={() => handleCheckboxBlur("commercialScope")}
                         className="h-4 w-4"
                       />
                       <span className="text-sm">{opt}</span>
@@ -406,30 +418,36 @@ export default function QuotePopup() {
                   ))}
                 </div>
 
-                {/* commercial scope other input */}
                 {form.commercialScope.includes("Other") && (
-                  <div className="mt-2">
-                    <input
-                      name="commercialScopeOther"
-                      value={form.commercialScopeOther}
-                      onChange={handleChange}
-                      className={`${inputBase} w-full mt-1 border-gray-300`}
-                      placeholder="Please specify other scope..."
-                    />
-                  </div>
+                  <input
+                    name="commercialScopeOther"
+                    value={form.commercialScopeOther}
+                    onChange={handleChange}
+                    placeholder="Please specify other scope..."
+                    className={`${inputBase} w-full mt-2 border-gray-300`}
+                  />
                 )}
               </div>
 
-              {/* Approx area & timeline & site ready */}
+              {/* Area / Timeline / Site Ready */}
               <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
                 <label className="flex flex-col">
-                  <span className="text-sm font-medium text-gray-800 mb-2">Approx. Area</span>
-                  <input name="approxArea" onChange={handleChange} className={inputBase + " border-gray-300"} placeholder="e.g. 1200 sqft or 110 sqm" />
+                  <span className="text-sm font-medium text-gray-800 mb-2">
+                    Approx. Area
+                  </span>
+                  <input
+                    name="approxArea"
+                    onChange={handleChange}
+                    placeholder="e.g. 1200 sqft"
+                    className={`${inputBase} border-gray-300`}
+                  />
                 </label>
 
                 <label className="flex flex-col">
-                  <span className="text-sm font-medium text-gray-800 mb-2">Timeline / When to start</span>
-                  <select name="timeline" onChange={handleChange} className={inputBase + " border-gray-300"}>
+                  <span className="text-sm font-medium text-gray-800 mb-2">
+                    Timeline / When to start
+                  </span>
+                  <select name="timeline" onChange={handleChange} className={`${inputBase} border-gray-300`}>
                     <option value="">Select</option>
                     <option>Immediately</option>
                     <option>Within 1 month</option>
@@ -439,8 +457,10 @@ export default function QuotePopup() {
                 </label>
 
                 <label className="flex flex-col">
-                  <span className="text-sm font-medium text-gray-800 mb-2">Is the site ready?</span>
-                  <select name="siteReady" onChange={handleChange} className={inputBase + " border-gray-300"}>
+                  <span className="text-sm font-medium text-gray-800 mb-2">
+                    Is the site ready?
+                  </span>
+                  <select name="siteReady" onChange={handleChange} className={`${inputBase} border-gray-300`}>
                     <option value="">Select</option>
                     <option>Yes</option>
                     <option>No</option>
@@ -451,17 +471,26 @@ export default function QuotePopup() {
             </section>
           )}
 
+          {/* RESIDENTIAL SECTION */}
           {form.type === "residential" && (
             <section className="mt-6">
               <h4 className="font-semibold mb-2">Residential Details</h4>
 
+              {/* Property Type */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <label className="flex flex-col">
-                  <span className="text-sm font-medium text-gray-800 mb-2">Property Type</span>
-                  <select name="propertyType" value={form.propertyType} onChange={handleChange} className={`${inputBase} border-gray-300`}>
+                  <span className="text-sm font-medium text-gray-800 mb-2">
+                    Property Type
+                  </span>
+                  <select
+                    name="propertyType"
+                    value={form.propertyType}
+                    onChange={handleChange}
+                    className={`${inputBase} border-gray-300`}
+                  >
                     <option value="">Select</option>
                     {residentialPropertyOptions.map((opt) => (
-                      <option key={opt} value={opt === "Others" ? "Others" : opt}>
+                      <option key={opt} value={opt}>
                         {opt}
                       </option>
                     ))}
@@ -471,13 +500,22 @@ export default function QuotePopup() {
                 {form.propertyType === "Others" && (
                   <label className="flex flex-col">
                     <span className="text-sm font-medium text-gray-800 mb-2">Please specify</span>
-                    <input name="propertyTypeOther" value={form.propertyTypeOther} onChange={handleChange} className={`${inputBase} border-gray-300`} placeholder="Type here..." />
+                    <input
+                      name="propertyTypeOther"
+                      value={form.propertyTypeOther}
+                      onChange={handleChange}
+                      className={`${inputBase} border-gray-300`}
+                    />
                   </label>
                 )}
               </div>
 
+              {/* Scope */}
               <div className="mt-4">
-                <span className="text-sm font-medium text-gray-800 mb-2 block">Scope of Work</span>
+                <span className="text-sm font-medium text-gray-800 mb-2 block">
+                  Scope of Work
+                </span>
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {residentialScopeOptions.map((opt) => (
                     <label key={opt} className="inline-flex items-center gap-2">
@@ -495,27 +533,26 @@ export default function QuotePopup() {
                 </div>
 
                 {form.residentialScope.includes("Other") && (
-                  <div className="mt-2">
-                    <input
-                      name="residentialScopeOther"
-                      value={form.residentialScopeOther}
-                      onChange={handleChange}
-                      className={`${inputBase} w-full mt-1 border-gray-300`}
-                      placeholder="Please specify other scope..."
-                    />
-                  </div>
+                  <input
+                    name="residentialScopeOther"
+                    value={form.residentialScopeOther}
+                    onChange={handleChange}
+                    placeholder="Please specify other scope..."
+                    className={`${inputBase} w-full mt-2 border-gray-300`}
+                  />
                 )}
               </div>
 
+              {/* Area / Timeline / Site Ready */}
               <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
                 <label className="flex flex-col">
                   <span className="text-sm font-medium text-gray-800 mb-2">Approx. Area</span>
-                  <input name="approxAreaResidential" onChange={handleChange} className={inputBase + " border-gray-300"} placeholder="e.g. 1200 sqft" />
+                  <input name="approxAreaResidential" onChange={handleChange} placeholder="e.g. 1200 sqft" className={`${inputBase} border-gray-300`} />
                 </label>
 
                 <label className="flex flex-col">
                   <span className="text-sm font-medium text-gray-800 mb-2">Timeline / When to start</span>
-                  <select name="timelineResidential" onChange={handleChange} className={inputBase + " border-gray-300"}>
+                  <select name="timelineResidential" onChange={handleChange} className={`${inputBase} border-gray-300`}>
                     <option value="">Select</option>
                     <option>Immediately</option>
                     <option>Within 1 month</option>
@@ -526,7 +563,7 @@ export default function QuotePopup() {
 
                 <label className="flex flex-col">
                   <span className="text-sm font-medium text-gray-800 mb-2">Is the site ready?</span>
-                  <select name="siteReadyResidential" onChange={handleChange} className={inputBase + " border-gray-300"}>
+                  <select name="siteReadyResidential" onChange={handleChange} className={`${inputBase} border-gray-300`}>
                     <option value="">Select</option>
                     <option>Yes</option>
                     <option>No</option>
@@ -537,31 +574,38 @@ export default function QuotePopup() {
             </section>
           )}
 
+          {/* FNB SECTION */}
           {form.type === "fnb" && (
             <section className="mt-6">
               <h4 className="font-semibold mb-2">F&B Details</h4>
 
+              {/* FNB Type */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <label className="flex flex-col">
                   <span className="text-sm font-medium text-gray-800 mb-2">Type of F&B Establishment</span>
                   <select name="fnbType" value={form.fnbType} onChange={handleChange} className={`${inputBase} border-gray-300`}>
                     <option value="">Select</option>
                     {fnbTypeOptions.map((opt) => (
-                      <option key={opt} value={opt === "Others" ? "Others" : opt}>{opt}</option>
+                      <option key={opt} value={opt}>{opt}</option>
                     ))}
                   </select>
                 </label>
 
                 {form.fnbType === "Others" && (
-                  <label className="flex flex-col">
-                    <span className="text-sm font-medium text-gray-800 mb-2">Please specify</span>
-                    <input name="fnbTypeOther" value={form.fnbTypeOther} onChange={handleChange} className={`${inputBase} border-gray-300`} placeholder="Type here..." />
-                  </label>
+                  <input
+                    name="fnbTypeOther"
+                    value={form.fnbTypeOther}
+                    onChange={handleChange}
+                    placeholder="Please specify..."
+                    className={`${inputBase} border-gray-300`}
+                  />
                 )}
               </div>
 
+              {/* Scope */}
               <div className="mt-4">
                 <span className="text-sm font-medium text-gray-800 mb-2 block">Scope of Work</span>
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {fnbScopeOptions.map((opt) => (
                     <label key={opt} className="inline-flex items-center gap-2">
@@ -577,28 +621,28 @@ export default function QuotePopup() {
                     </label>
                   ))}
                 </div>
+
                 {form.fnbScope.includes("Other") && (
-                  <div className="mt-2">
-                    <input
-                      name="fnbScopeOther"
-                      value={form.fnbScopeOther}
-                      onChange={handleChange}
-                      className={`${inputBase} w-full mt-1 border-gray-300`}
-                      placeholder="Please specify other scope..."
-                    />
-                  </div>
+                  <input
+                    name="fnbScopeOther"
+                    value={form.fnbScopeOther}
+                    onChange={handleChange}
+                    placeholder="Specify other scope..."
+                    className={`${inputBase} w-full mt-2 border-gray-300`}
+                  />
                 )}
               </div>
 
+              {/* Area / Timeline / Site Ready */}
               <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
                 <label className="flex flex-col">
                   <span className="text-sm font-medium text-gray-800 mb-2">Approx. Area</span>
-                  <input name="approxAreaFnb" onChange={handleChange} className={inputBase + " border-gray-300"} placeholder="e.g. 100 sqm" />
+                  <input name="approxAreaFnb" onChange={handleChange} placeholder="e.g. 100 sqm" className={`${inputBase} border-gray-300`} />
                 </label>
 
                 <label className="flex flex-col">
                   <span className="text-sm font-medium text-gray-800 mb-2">Timeline / When to start</span>
-                  <select name="timelineFnb" onChange={handleChange} className={inputBase + " border-gray-300"}>
+                  <select name="timelineFnb" onChange={handleChange} className={`${inputBase} border-gray-300`}>
                     <option value="">Select</option>
                     <option>Immediately</option>
                     <option>Within 1 month</option>
@@ -609,7 +653,7 @@ export default function QuotePopup() {
 
                 <label className="flex flex-col">
                   <span className="text-sm font-medium text-gray-800 mb-2">Is the site ready?</span>
-                  <select name="siteReadyFnb" onChange={handleChange} className={inputBase + " border-gray-300"}>
+                  <select name="siteReadyFnb" onChange={handleChange} className={`${inputBase} border-gray-300`}>
                     <option value="">Select</option>
                     <option>Yes</option>
                     <option>No</option>
@@ -620,41 +664,75 @@ export default function QuotePopup() {
             </section>
           )}
 
-          {/* Message / Requirements (required) */}
+          {/* MESSAGE / REQUIREMENTS */}
           <div className="mt-6">
             <label className="flex flex-col">
               <span className="text-sm font-medium text-gray-800 mb-2">
                 Message / Requirements <span className="text-red-600">*</span>
               </span>
+
               <textarea
                 name="message"
                 value={form.message}
                 onChange={handleChange}
                 onBlur={handleBlur}
                 rows={5}
-                className={`rounded-lg border p-3 text-gray-800 focus:outline-none focus:ring-2 focus:border-brand-sky-blue w-full ${errors.message && touched.message ? inputError : "border-gray-300"}`}
                 placeholder="Tell us about your project..."
+                className={`rounded-lg border p-3 text-gray-800 focus:outline-none focus:ring-2 w-full ${
+                  errors.message && touched.message ? inputError : "border-gray-300"
+                }`}
               />
+
               {errors.message && touched.message && (
                 <p className="text-sm text-red-600 mt-1">{errors.message}</p>
               )}
             </label>
           </div>
 
-          {/* footer buttons */}
+          {/* ATTACHMENTS */}
+          <div className="mt-6">
+            <label className="flex flex-col">
+              <span className="text-sm font-medium text-gray-800 mb-2">
+                Upload Files (Optional)
+              </span>
+
+              <input
+                type="file"
+                name="attachments"
+                multiple
+                accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                onChange={(e) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    attachments: Array.from(e.target.files),
+                  }))
+                }
+                className="w-full border border-gray-300 rounded-lg p-3 bg-white cursor-pointer file:mr-4 
+                          file:py-2 file:px-4 file:rounded-md file:border file:border-gray-300
+                          file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200"
+              />
+
+              <p className="text-xs text-gray-500 mt-1">
+                Supported formats: PDF, JPG, PNG, DOC (Max 10MB each)
+              </p>
+
+              {form.attachments.length > 0 && (
+                <ul className="mt-2 pl-4 list-disc text-sm text-gray-700">
+                  {form.attachments.map((file, i) => (
+                    <li key={i}>{file.name}</li>
+                  ))}
+                </ul>
+              )}
+            </label>
+          </div>
+
+          {/* Footer Buttons */}
           <div className="border-t border-gray-300 p-4 bg-white flex justify-end gap-3 mt-4">
-            <button
-              type="button"
-              onClick={closeQuote}
-              className="h-10 px-4 rounded-lg font-medium border border-gray-300"
-            >
+            <button type="button" onClick={closeQuote} className="h-10 px-4 rounded-lg font-medium border border-gray-300">
               Cancel
             </button>
 
-            <button
-              type="submit"
-              className="h-10 px-6 rounded-lg font-bold text-white bg-brand-ocean-blue hover:bg-brand-ocean-blue/90 shadow"
-            >
+            <button type="submit" className="h-10 px-6 rounded-lg font-bold text-white bg-brand-ocean-blue hover:bg-brand-ocean-blue/90 shadow">
               Submit Request
             </button>
           </div>
