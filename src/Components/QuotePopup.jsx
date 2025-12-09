@@ -11,7 +11,7 @@ export default function QuotePopup() {
     type: "",
     projectLocation: "",
     message: "",
-    attachments: [],
+    attachments: [], // ✅ changed from null → []
 
     // commercial specifics
     commercialSpaceType: "",
@@ -158,31 +158,13 @@ export default function QuotePopup() {
     // Normal update
     setForm((prev) => ({ ...prev, [name]: value }));
 
-    // If switching type, reset conditional sections
-    if (name === "type") {
-      setForm((prev) => ({
-        ...prev,
-        type: value,
-        commercialSpaceType: "",
-        commercialSpaceTypeOther: "",
-        commercialScope: [],
-        commercialScopeOther: "",
-        propertyType: "",
-        propertyTypeOther: "",
-        residentialScope: [],
-        residentialScopeOther: "",
-        fnbType: "",
-        fnbTypeOther: "",
-        fnbScope: [],
-        fnbScopeOther: "",
-      }));
-    }
-
     // Clear other-type fields when not applicable
     if (name === "commercialSpaceType" && value !== "Other")
       setForm((p) => ({ ...p, commercialSpaceTypeOther: "" }));
+
     if (name === "propertyType" && value !== "Others")
       setForm((p) => ({ ...p, propertyTypeOther: "" }));
+
     if (name === "fnbType" && value !== "Others")
       setForm((p) => ({ ...p, fnbTypeOther: "" }));
 
@@ -197,15 +179,65 @@ export default function QuotePopup() {
     setErrors((prev) => ({ ...prev, [name]: validateField(name, form[name]) }));
   }
 
-  // Submit
-  function handleSubmit(e) {
-    e.preventDefault();
-    const newErrors = runValidationForAll();
-    if (Object.keys(newErrors).length) return;
-
-    console.log("Submitting quote request:", form);
-    closeQuote();
+  // ❗ Helper for appending arrays to FormData
+  function appendArrayToFormData(fd, key, arr) {
+    arr.forEach((item) => fd.append(key, item));
   }
+
+// ⭐ UPDATED SUBMIT HANDLER — sends to backend with attachments
+async function handleSubmit(e) {
+  e.preventDefault();
+  const newErrors = runValidationForAll();
+  if (Object.keys(newErrors).length) return;
+
+  try {
+    const fd = new FormData();
+
+    // Add basic fields
+    Object.keys(form).forEach((key) => {
+      if (
+        key !== "commercialScope" &&
+        key !== "residentialScope" &&
+        key !== "fnbScope" &&
+        key !== "attachments"
+      ) {
+        fd.append(key, form[key]);
+      }
+    });
+
+    // Add array fields
+    appendArrayToFormData(fd, "commercialScope", form.commercialScope);
+    appendArrayToFormData(fd, "residentialScope", form.residentialScope);
+    appendArrayToFormData(fd, "fnbScope", form.fnbScope);
+
+    // Add attachments
+    if (form.attachments.length > 0) {
+      form.attachments.forEach((file) => {
+        fd.append("attachments", file);
+      });
+    }
+
+    // ⭐ UPDATED ENDPOINT HERE
+    const res = await fetch("https://zayken-backend.onrender.com/submit-quote", {
+      method: "POST",
+      body: fd,
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      alert("Quote sent successfully!");
+      setForm({ ...emptyForm });
+      closeQuote();
+    } else {
+      alert("Failed to send quote.");
+    }
+  } catch (err) {
+    console.error("Submit error:", err);
+    alert("Server error. Check console.");
+  }
+}
+
 
   // Input styles
   const inputBase =
@@ -219,26 +251,25 @@ export default function QuotePopup() {
 
       {/* Popup */}
       <div className="relative w-full max-w-3xl bg-white rounded-xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+
         {/* Header */}
-<div className="flex items-center justify-between border-b border-gray-300 p-6 bg-white">
-  <div className="flex flex-col">
-    <h1 className="text-2xl font-bold text-gray-900">Get a Free Quote</h1>
+        <div className="flex items-center justify-between border-b border-gray-300 p-6 bg-white">
+          <div className="flex flex-col">
+            <h1 className="text-2xl font-bold text-gray-900">Get a Free Quote</h1>
+            <p className="text-gray-600 text-base mt-1">
+              Fill out the form below and our team will get back to you shortly.
+            </p>
+          </div>
 
-    {/* ← ADD THIS PARAGRAPH */}
-    <p className="text-gray-600 text-base mt-1">
-      Fill out the form below and our team will get back to you shortly.
-    </p>
-  </div>
+          <button
+            onClick={closeQuote}
+            className="flex h-10 w-10 items-center justify-center rounded-full text-gray-500 hover:bg-gray-200"
+          >
+            <span className="material-symbols-outlined text-2xl">close</span>
+          </button>
+        </div>
 
-  <button
-    onClick={closeQuote}
-    className="flex h-10 w-10 items-center justify-center rounded-full text-gray-500 hover:bg-gray-200"
-  >
-    <span className="material-symbols-outlined text-2xl">close</span>
-  </button>
-</div>
-
-        {/* Form */}
+        {/* ----------- FORM START -------------- */}
         <form className="p-6 overflow-y-auto flex-1" onSubmit={handleSubmit} noValidate>
           {/* Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -736,6 +767,7 @@ export default function QuotePopup() {
               Submit Request
             </button>
           </div>
+
         </form>
       </div>
     </div>
