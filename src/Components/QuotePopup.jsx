@@ -184,38 +184,38 @@ export default function QuotePopup() {
     arr.forEach((item) => fd.append(key, item));
   }
 
-// ⭐ UPDATED SUBMIT HANDLER — sends to backend with attachments
-async function handleSubmit(e) {
-  e.preventDefault();
-  const newErrors = runValidationForAll();
-  if (Object.keys(newErrors).length) return;
+  // ⭐ UPDATED SUBMIT HANDLER — sends to backend with attachments
+  async function handleSubmit(e) {
+    e.preventDefault();
+    const newErrors = runValidationForAll();
+    if (Object.keys(newErrors).length) return;
 
-  try {
-    const fd = new FormData();
+    try {
+      const fd = new FormData();
 
-    // Add basic fields
-    Object.keys(form).forEach((key) => {
-      if (
-        key !== "commercialScope" &&
-        key !== "residentialScope" &&
-        key !== "fnbScope" &&
-        key !== "attachments"
-      ) {
-        fd.append(key, form[key]);
-      }
-    });
-
-    // Add array fields
-    appendArrayToFormData(fd, "commercialScope", form.commercialScope);
-    appendArrayToFormData(fd, "residentialScope", form.residentialScope);
-    appendArrayToFormData(fd, "fnbScope", form.fnbScope);
-
-    // Add attachments
-    if (form.attachments.length > 0) {
-      form.attachments.forEach((file) => {
-        fd.append("attachments", file);
+      // Add basic fields
+      Object.keys(form).forEach((key) => {
+        if (
+          key !== "commercialScope" &&
+          key !== "residentialScope" &&
+          key !== "fnbScope" &&
+          key !== "attachments"
+        ) {
+          fd.append(key, form[key]);
+        }
       });
-    }
+
+      // Add array fields
+      appendArrayToFormData(fd, "commercialScope", form.commercialScope);
+      appendArrayToFormData(fd, "residentialScope", form.residentialScope);
+      appendArrayToFormData(fd, "fnbScope", form.fnbScope);
+
+      // Add attachments
+      if (form.attachments.length > 0) {
+        form.attachments.forEach((file) => {
+          fd.append("attachments", file);
+        });
+      }
 
     // ⭐ UPDATED ENDPOINT HERE
     const res = await fetch("https://zayken-backend.onrender.com/submit-quote", {
@@ -223,21 +223,20 @@ async function handleSubmit(e) {
       body: fd,
     });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    if (data.success) {
-      alert("Quote sent successfully!");
-      setForm({ ...emptyForm });
-      closeQuote();
-    } else {
-      alert("Failed to send quote.");
+      if (data.success) {
+        alert("Quote sent successfully!");
+        setForm({ ...emptyForm });
+        closeQuote();
+      } else {
+        alert("Failed to send quote.");
+      }
+    } catch (err) {
+      console.error("Submit error:", err);
+      alert("Server error. Check console.");
     }
-  } catch (err) {
-    console.error("Submit error:", err);
-    alert("Server error. Check console.");
   }
-}
-
 
   // Input styles
   const inputBase =
