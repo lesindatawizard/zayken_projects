@@ -35,6 +35,8 @@ export default function QuotePopup() {
   const [form, setForm] = useState({ ...emptyForm });
   const [touched, setTouched] = useState({});
   const [errors, setErrors] = useState({});
+  const [toast, setToast] = useState({ show: false, message: "", type: "info" });
+
 
   // Reset everything when popup opens
   useEffect(() => {
@@ -184,15 +186,21 @@ export default function QuotePopup() {
     arr.forEach((item) => fd.append(key, item));
   }
 
-  // ⭐ UPDATED SUBMIT HANDLER — sends to backend with attachments
+  // 👉 THEN ADD showToast() HERE
+  function showToast(message, type = "info", duration = 4000) {
+    setToast({ show: true, message, type });
+    setTimeout(() => setToast((t) => ({ ...t, show: false })), duration);
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
+  
     const newErrors = runValidationForAll();
     if (Object.keys(newErrors).length) return;
-
+  
     try {
       const fd = new FormData();
-
+  
       // Add basic fields
       Object.keys(form).forEach((key) => {
         if (
@@ -204,37 +212,37 @@ export default function QuotePopup() {
           fd.append(key, form[key]);
         }
       });
-
-      // Add array fields
-      appendArrayToFormData(fd, "commercialScope", form.commercialScope);
-      appendArrayToFormData(fd, "residentialScope", form.residentialScope);
-      appendArrayToFormData(fd, "fnbScope", form.fnbScope);
-
+  
+      // Add array fields safely
+      appendArrayToFormData(fd, "commercialScope", form.commercialScope || []);
+      appendArrayToFormData(fd, "residentialScope", form.residentialScope || []);
+      appendArrayToFormData(fd, "fnbScope", form.fnbScope || []);
+  
       // Add attachments
-      if (form.attachments.length > 0) {
+      if (form.attachments?.length > 0) {
         form.attachments.forEach((file) => {
           fd.append("attachments", file);
         });
       }
-
-    // ⭐ UPDATED ENDPOINT HERE
-    const res = await fetch("https://zayken-backend.onrender.com/submit-quote", {
-      method: "POST",
-      body: fd,
-    });
-
+  
+      // ⭐ BACKEND ENDPOINT
+      const res = await fetch("https://zayken-backend.onrender.com/submit-quote", {
+        method: "POST",
+        body: fd,
+      });
+  
       const data = await res.json();
-
+  
       if (data.success) {
-        alert("Quote sent successfully!");
+        showToast("Quote sent successfully!", "success", 4000);
         setForm({ ...emptyForm });
         closeQuote();
       } else {
-        alert("Failed to send quote.");
+        showToast("Failed to send quote.", "error", 5000);
       }
     } catch (err) {
       console.error("Submit error:", err);
-      alert("Server error. Check console.");
+      showToast("Server error. Try again.", "error", 6000);
     }
   }
 
@@ -244,7 +252,51 @@ export default function QuotePopup() {
   const inputError = "border-red-500 ring-1 ring-red-200";
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
+    <>
+      {/* CENTER-BOTTOM TOAST */}
+      <div
+        aria-live="polite"
+        aria-atomic="true"
+        className={`fixed inset-x-0 bottom-6 flex items-center justify-center pointer-events-none z-[1000]`}>
+        <div
+          role="status"
+          className={`pointer-events-auto transform transition-all duration-300 ${
+            toast.show ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+          } rounded-md py-3 px-5 max-w-lg w-full mx-4`}
+          style={{
+            backgroundColor: "rgba(42,140,255,0.4)", // #2A8CFF at 40% opacity
+            boxShadow: "0 6px 20px rgba(42,140,255,0.12)",
+            color: "#fff",
+            textAlign: "center",
+            backdropFilter: "saturate(120%) blur(4px)",
+          }}
+        >
+          <div className="flex items-center justify-center gap-3">
+            {/* optional icon */}
+            <svg
+              className="w-5 h-5 flex-shrink-0"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              style={{ color: "#fff" }}
+              aria-hidden="true"
+            >
+              {toast.type === "success" ? (
+                <path d="M20 6L9 17l-5-5" />
+              ) : (
+                <path d="M12 9v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              )}
+            </svg>
+
+            <div className="text-sm font-medium">{toast.message}</div>
+          </div>
+        </div>
+      </div>
+
+      <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
       {/* Overlay */}
       <div className="absolute inset-0 bg-black/50" onClick={closeQuote} />
 
@@ -770,5 +822,6 @@ export default function QuotePopup() {
         </form>
       </div>
     </div>
+    </>
   );
 }
