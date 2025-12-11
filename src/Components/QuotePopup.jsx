@@ -399,7 +399,7 @@
               {/* Client Type */}
               <label className="flex flex-col">
                 <span className="text-sm font-medium text-gray-800 mb-2">
-                  Client Type <span className="text-red-600">*</span>
+                  Project Type <span className="text-red-600">*</span>
                 </span>
                 <select
                   name="type"
@@ -410,7 +410,7 @@
                     errors.type && touched.type ? inputError : "border-gray-300"
                   }`}
                 >
-                  <option value="">Select client type</option>
+                  <option value="">Select Project type</option>
                   <option value="commercial">Commercial</option>
                   <option value="residential">Residential</option>
                   <option value="fnb">F&B</option>
@@ -531,7 +531,7 @@
                     <input
                       name="approxArea"
                       onChange={handleChange}
-                      placeholder="e.g. 1200 sqft"
+                      placeholder="e.g. 1200 sqm"
                       className={`${inputBase} border-gray-300`}
                     />
                   </label>
@@ -640,7 +640,7 @@
               <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
                 <label className="flex flex-col">
                   <span className="text-sm font-medium text-gray-800 mb-2">Approx. Area</span>
-                  <input name="approxAreaResidential" onChange={handleChange} placeholder="e.g. 1200 sqft" className={`${inputBase} border-gray-300`} />
+                  <input name="approxAreaResidential" onChange={handleChange} placeholder="e.g. 1200 sqm" className={`${inputBase} border-gray-300`} />
                 </label>
 
                 <label className="flex flex-col">
