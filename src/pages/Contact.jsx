@@ -1,9 +1,7 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
 import heroBg from "../assets/homepage_hero_bg.jpg";
 
 export default function Contact() {
-
   // -------------------------
   // FORM STATE
   // -------------------------
@@ -15,36 +13,97 @@ export default function Contact() {
     message: "",
   });
 
+  const [touched, setTouched] = useState({});
+  const [errors, setErrors] = useState({});
   const [toast, setToast] = useState({ show: false, msg: "", type: "info" });
 
   // -------------------------
-  // HANDLERS
+  // VALIDATORS (Same logic style as Quote Popup)
+  // -------------------------
+  const validators = {
+    name: (v) => (v.trim() ? "" : "Name is required"),
+    phone: (v) =>
+      /^[0-9+()\-.\s]{6,}$/.test(v)
+        ? ""
+        : "Enter a valid phone number",
+    email: (v) =>
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)
+        ? ""
+        : "Enter a valid email address",
+    projectType: (v) => (v ? "" : "Please select a project type"),
+  };
+
+  function validateField(name, value) {
+    return validators[name] ? validators[name](value) : "";
+  }
+
+  function runValidationForAll() {
+    const newErrors = {};
+    Object.keys(validators).forEach((key) => {
+      const err = validateField(key, form[key]);
+      if (err) newErrors[key] = err;
+    });
+    setErrors(newErrors);
+    return newErrors;
+  }
+
+  // -------------------------
+  // INPUT HANDLERS
   // -------------------------
   function handleChange(e) {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
+
+    // Real-time clear error
+    setErrors((prev) => ({ ...prev, [name]: "" }));
   }
 
+  function handleBlur(e) {
+    const { name } = e.target;
+    setTouched((t) => ({ ...t, [name]: true }));
+    setErrors((prev) => ({ ...prev, [name]: validateField(name, form[name]) }));
+  }
+
+  // -------------------------
+  // TOAST
+  // -------------------------
   function showToast(msg, type = "info") {
     setToast({ show: true, msg, type });
     setTimeout(() => setToast({ show: false, msg: "", type: "info" }), 4000);
   }
 
+  // -------------------------
+  // SUBMIT HANDLER
+  // -------------------------
   async function handleSubmit(e) {
     e.preventDefault();
 
+    const newErrors = runValidationForAll();
+    if (Object.keys(newErrors).length > 0) return;
+
     try {
-      const res = await fetch("https://zayken-backend.onrender.com/contact-message", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
+      const res = await fetch(
+        "https://zayken-backend.onrender.com/contact-message",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(form),
+        }
+      );
 
       const data = await res.json();
 
       if (data.success) {
         showToast("Message sent successfully!", "success");
-        setForm({ name: "", phone: "", email: "", projectType: "", message: "" });
+        setForm({
+          name: "",
+          phone: "",
+          email: "",
+          projectType: "",
+          message: "",
+        });
+        setTouched({});
+        setErrors({});
       } else {
         showToast("Failed to send message.", "error");
       }
@@ -54,15 +113,23 @@ export default function Contact() {
     }
   }
 
+  // -------------------------
+  // INPUT STYLE (restored white box + shadow-soft)
+  // -------------------------
+  const inputBase =
+    "h-12 rounded-lg border border-gray-300 bg-white px-4 text-gray-900 shadow-soft focus:ring-2 focus:ring-brand-ocean-blue focus:outline-none";
+  const inputError = "border-red-500 ring-1 ring-red-300";
+
   return (
     <div className="font-display text-gray-800">
-      {/* Toast Message */}
+      {/* Toast */}
       {toast.show && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-black/80 text-white px-5 py-3 rounded-lg z-50 shadow-lg">
           {toast.msg}
         </div>
       )}
 
+      {/* PAGE BODY */}
       <div
         className="relative flex min-h-screen w-full flex-col"
         style={{
@@ -77,7 +144,8 @@ export default function Contact() {
         <div className="flex h-full grow flex-col w-full backdrop-blur-effect">
           <main className="w-full max-w-7xl mx-auto flex-1 px-4 py-10 md:px-6 md:py-14">
             <div className="flex flex-col gap-16">
-              {/* HERO */}
+              
+              {/* ---------------- HERO SECTION ---------------- */}
               <section className="relative flex min-h-[260px] flex-col items-center justify-center overflow-hidden rounded-xl bg-white p-8 text-center shadow-soft md:min-h-[320px]">
                 <div
                   className="absolute inset-0"
@@ -98,9 +166,10 @@ export default function Contact() {
                 </div>
               </section>
 
-              {/* CONTENT GRID */}
+              {/* ---------------- FORM GRID ---------------- */}
               <section className="grid grid-cols-1 lg:grid-cols-5 gap-12">
-                {/* FORM */}
+
+                {/* ---------------- CONTACT FORM ---------------- */}
                 <div className="lg:col-span-3">
                   <h2 className="text-3xl font-bold text-gray-900">Get in Touch</h2>
                   <p className="text-gray-600 mt-2 mb-8">
@@ -108,8 +177,11 @@ export default function Contact() {
                   </p>
 
                   <form className="space-y-6" onSubmit={handleSubmit}>
+                    
                     {/* Name + Phone */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      
+                      {/* Name */}
                       <div className="flex flex-col">
                         <label className="text-gray-700 font-medium pb-1">
                           Name <span className="text-red-500">*</span>
@@ -117,14 +189,20 @@ export default function Contact() {
                         <input
                           type="text"
                           name="name"
-                          required
                           value={form.name}
                           onChange={handleChange}
+                          onBlur={handleBlur}
+                          className={`${inputBase} ${
+                            errors.name && touched.name ? inputError : ""
+                          }`}
                           placeholder="Enter your full name"
-                          className="h-12 rounded-lg border border-gray-300 bg-white px-4 text-gray-900 shadow-soft focus:ring-2 focus:ring-brand-ocean-blue focus:outline-none"
                         />
+                        {errors.name && touched.name && (
+                          <p className="text-sm text-red-600 mt-1">{errors.name}</p>
+                        )}
                       </div>
 
+                      {/* Phone */}
                       <div className="flex flex-col">
                         <label className="text-gray-700 font-medium pb-1">
                           Phone <span className="text-red-500">*</span>
@@ -132,12 +210,17 @@ export default function Contact() {
                         <input
                           type="tel"
                           name="phone"
-                          required
                           value={form.phone}
                           onChange={handleChange}
+                          onBlur={handleBlur}
+                          className={`${inputBase} ${
+                            errors.phone && touched.phone ? inputError : ""
+                          }`}
                           placeholder="Enter your phone number"
-                          className="h-12 rounded-lg border border-gray-300 bg-white px-4 text-gray-900 shadow-soft focus:ring-2 focus:ring-brand-ocean-blue focus:outline-none"
                         />
+                        {errors.phone && touched.phone && (
+                          <p className="text-sm text-red-600 mt-1">{errors.phone}</p>
+                        )}
                       </div>
                     </div>
 
@@ -149,12 +232,17 @@ export default function Contact() {
                       <input
                         type="email"
                         name="email"
-                        required
                         value={form.email}
                         onChange={handleChange}
+                        onBlur={handleBlur}
+                        className={`${inputBase} ${
+                          errors.email && touched.email ? inputError : ""
+                        }`}
                         placeholder="Enter your email address"
-                        className="h-12 rounded-lg border border-gray-300 bg-white px-4 text-gray-900 shadow-soft focus:ring-2 focus:ring-brand-ocean-blue focus:outline-none"
                       />
+                      {errors.email && touched.email && (
+                        <p className="text-sm text-red-600 mt-1">{errors.email}</p>
+                      )}
                     </div>
 
                     {/* Project Type */}
@@ -164,10 +252,12 @@ export default function Contact() {
                       </label>
                       <select
                         name="projectType"
-                        required
                         value={form.projectType}
                         onChange={handleChange}
-                        className="h-12 rounded-lg border border-gray-300 bg-white px-4 text-gray-900 shadow-soft focus:ring-2 focus:ring-brand-ocean-blue focus:outline-none"
+                        onBlur={handleBlur}
+                        className={`${inputBase} ${
+                          errors.projectType && touched.projectType ? inputError : ""
+                        }`}
                       >
                         <option value="">Select project type</option>
                         <option>Commercial Fit-out</option>
@@ -176,41 +266,54 @@ export default function Contact() {
                         <option>Office Renovation</option>
                         <option>Other</option>
                       </select>
+                      {errors.projectType && touched.projectType && (
+                        <p className="text-sm text-red-600 mt-1">{errors.projectType}</p>
+                      )}
                     </div>
 
                     {/* Message */}
                     <div className="flex flex-col">
-                      <label className="text-gray-700 font-medium pb-1">Message</label>
+                      <label className="text-gray-700 font-medium pb-1">
+                        Message
+                      </label>
                       <textarea
                         name="message"
                         value={form.message}
                         onChange={handleChange}
-                        placeholder="Enter your message here..."
-                        className="min-h-[140px] rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 shadow-soft focus:ring-2 focus:ring-brand-ocean-blue focus:outline-none resize-y"
-                      ></textarea>
+                        rows={4}
+                        className="
+                          min-h-[140px] rounded-lg border border-gray-300 bg-white px-4 py-3 
+                          text-gray-900 shadow-soft focus:ring-2 focus:ring-brand-ocean-blue 
+                          focus:outline-none resize-y
+                        "
+                        placeholder="Enter your message..."
+                      />
                     </div>
 
                     {/* Submit */}
                     <button
-                      type="submit"
-                      className="flex w-full md:w-auto items-center justify-center rounded-lg h-12 px-8 bg-brand-ocean-blue text-white text-lg font-bold shadow-lg hover:brightness-110 transition"
-                    >
-                      Submit
-                    </button>
+  type="submit"
+  className="flex w-full md:w-auto items-center justify-center rounded-lg h-12 px-8 
+             bg-brand-ocean-blue text-white text-lg font-bold shadow-lg 
+             transition-transform duration-200 hover:scale-105 hover:brightness-110"
+>
+  Submit
+</button>
                   </form>
                 </div>
 
-                {/* CONTACT INFO */}
+                {/* ---------------- CONTACT INFO ---------------- */}
                 <div className="lg:col-span-2 mt-2">
                   <div className="bg-white p-8 rounded-xl shadow-soft border border-gray-200">
-                    <h3 className="text-2xl font-bold text-gray-900 mb-6">
-                      Our Contact Information
-                    </h3>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-6">Our Contact Information</h3>
 
                     <div className="space-y-6">
+                      
                       {/* Phone */}
                       <div className="flex items-start gap-4">
-                        <span className="material-symbols-outlined text-brand-ocean-blue text-3xl">call</span>
+                        <span className="material-symbols-outlined text-brand-ocean-blue text-3xl">
+                          call
+                        </span>
                         <div>
                           <p className="text-gray-500 text-sm">Phone</p>
                           <a href="tel:+96894657347" className="text-gray-900 font-medium hover:underline">
@@ -221,7 +324,9 @@ export default function Contact() {
 
                       {/* WhatsApp */}
                       <div className="flex items-start gap-4">
-                        <span className="material-symbols-outlined text-brand-ocean-blue text-3xl">chat</span>
+                        <span className="material-symbols-outlined text-brand-ocean-blue text-3xl">
+                          chat
+                        </span>
                         <div>
                           <p className="text-gray-500 text-sm">WhatsApp</p>
                           <a href="https://wa.me/96894657347" className="text-gray-900 font-medium hover:underline">
@@ -232,7 +337,9 @@ export default function Contact() {
 
                       {/* Email */}
                       <div className="flex items-start gap-4">
-                        <span className="material-symbols-outlined text-brand-ocean-blue text-3xl">mail</span>
+                        <span className="material-symbols-outlined text-brand-ocean-blue text-3xl">
+                          mail
+                        </span>
                         <div>
                           <p className="text-gray-500 text-sm">Email</p>
                           <a href="mailto:info@zaykenprojects.com" className="text-gray-900 font-medium hover:underline">
@@ -243,15 +350,18 @@ export default function Contact() {
 
                       {/* Address */}
                       <div className="flex items-start gap-4">
-                        <span className="material-symbols-outlined text-brand-ocean-blue text-3xl">location_on</span>
+                        <span className="material-symbols-outlined text-brand-ocean-blue text-3xl">
+                          location_on
+                        </span>
                         <div>
                           <p className="text-gray-500 text-sm">Address</p>
                           <p className="text-gray-900 font-medium">
                             Azaiba, House of Music,
-                            <br />3rd Floor, Office-308
+                            <br /> 3rd Floor, Office-308
                           </p>
                         </div>
                       </div>
+
                     </div>
                   </div>
                 </div>
@@ -264,3 +374,4 @@ export default function Contact() {
     </div>
   );
 }
+
