@@ -1,9 +1,68 @@
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import heroBg from "../assets/homepage_hero_bg.jpg";
 
 export default function Contact() {
+
+  // -------------------------
+  // FORM STATE
+  // -------------------------
+  const [form, setForm] = useState({
+    name: "",
+    phone: "",
+    email: "",
+    projectType: "",
+    message: "",
+  });
+
+  const [toast, setToast] = useState({ show: false, msg: "", type: "info" });
+
+  // -------------------------
+  // HANDLERS
+  // -------------------------
+  function handleChange(e) {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  }
+
+  function showToast(msg, type = "info") {
+    setToast({ show: true, msg, type });
+    setTimeout(() => setToast({ show: false, msg: "", type: "info" }), 4000);
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+
+    try {
+      const res = await fetch("https://zayken-backend.onrender.com/contact-message", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        showToast("Message sent successfully!", "success");
+        setForm({ name: "", phone: "", email: "", projectType: "", message: "" });
+      } else {
+        showToast("Failed to send message.", "error");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Server error. Please try again later.", "error");
+    }
+  }
+
   return (
     <div className="font-display text-gray-800">
+      {/* Toast Message */}
+      {toast.show && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-black/80 text-white px-5 py-3 rounded-lg z-50 shadow-lg">
+          {toast.msg}
+        </div>
+      )}
+
       <div
         className="relative flex min-h-screen w-full flex-col"
         style={{
@@ -16,11 +75,8 @@ export default function Contact() {
         }}
       >
         <div className="flex h-full grow flex-col w-full backdrop-blur-effect">
-
-          {/* MAIN */}
           <main className="w-full max-w-7xl mx-auto flex-1 px-4 py-10 md:px-6 md:py-14">
             <div className="flex flex-col gap-16">
-
               {/* HERO */}
               <section className="relative flex min-h-[260px] flex-col items-center justify-center overflow-hidden rounded-xl bg-white p-8 text-center shadow-soft md:min-h-[320px]">
                 <div
@@ -44,7 +100,6 @@ export default function Contact() {
 
               {/* CONTENT GRID */}
               <section className="grid grid-cols-1 lg:grid-cols-5 gap-12">
-
                 {/* FORM */}
                 <div className="lg:col-span-3">
                   <h2 className="text-3xl font-bold text-gray-900">Get in Touch</h2>
@@ -52,8 +107,7 @@ export default function Contact() {
                     Fill out the form below and our team will contact you soon.
                   </p>
 
-                  <form className="space-y-6">
-
+                  <form className="space-y-6" onSubmit={handleSubmit}>
                     {/* Name + Phone */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="flex flex-col">
@@ -62,7 +116,10 @@ export default function Contact() {
                         </label>
                         <input
                           type="text"
+                          name="name"
                           required
+                          value={form.name}
+                          onChange={handleChange}
                           placeholder="Enter your full name"
                           className="h-12 rounded-lg border border-gray-300 bg-white px-4 text-gray-900 shadow-soft focus:ring-2 focus:ring-brand-ocean-blue focus:outline-none"
                         />
@@ -74,7 +131,10 @@ export default function Contact() {
                         </label>
                         <input
                           type="tel"
+                          name="phone"
                           required
+                          value={form.phone}
+                          onChange={handleChange}
                           placeholder="Enter your phone number"
                           className="h-12 rounded-lg border border-gray-300 bg-white px-4 text-gray-900 shadow-soft focus:ring-2 focus:ring-brand-ocean-blue focus:outline-none"
                         />
@@ -88,7 +148,10 @@ export default function Contact() {
                       </label>
                       <input
                         type="email"
+                        name="email"
                         required
+                        value={form.email}
+                        onChange={handleChange}
                         placeholder="Enter your email address"
                         className="h-12 rounded-lg border border-gray-300 bg-white px-4 text-gray-900 shadow-soft focus:ring-2 focus:ring-brand-ocean-blue focus:outline-none"
                       />
@@ -100,7 +163,10 @@ export default function Contact() {
                         Type of project <span className="text-red-500">*</span>
                       </label>
                       <select
+                        name="projectType"
                         required
+                        value={form.projectType}
+                        onChange={handleChange}
                         className="h-12 rounded-lg border border-gray-300 bg-white px-4 text-gray-900 shadow-soft focus:ring-2 focus:ring-brand-ocean-blue focus:outline-none"
                       >
                         <option value="">Select project type</option>
@@ -116,6 +182,9 @@ export default function Contact() {
                     <div className="flex flex-col">
                       <label className="text-gray-700 font-medium pb-1">Message</label>
                       <textarea
+                        name="message"
+                        value={form.message}
+                        onChange={handleChange}
                         placeholder="Enter your message here..."
                         className="min-h-[140px] rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 shadow-soft focus:ring-2 focus:ring-brand-ocean-blue focus:outline-none resize-y"
                       ></textarea>
@@ -139,18 +208,12 @@ export default function Contact() {
                     </h3>
 
                     <div className="space-y-6">
-
                       {/* Phone */}
                       <div className="flex items-start gap-4">
-                        <span className="material-symbols-outlined text-brand-ocean-blue text-3xl">
-                          call
-                        </span>
+                        <span className="material-symbols-outlined text-brand-ocean-blue text-3xl">call</span>
                         <div>
                           <p className="text-gray-500 text-sm">Phone</p>
-                          <a
-                            href="tel:+96894657347"
-                            className="text-gray-900 font-medium hover:underline"
-                          >
+                          <a href="tel:+96894657347" className="text-gray-900 font-medium hover:underline">
                             +968 9465 7347
                           </a>
                         </div>
@@ -158,15 +221,10 @@ export default function Contact() {
 
                       {/* WhatsApp */}
                       <div className="flex items-start gap-4">
-                        <span className="material-symbols-outlined text-brand-ocean-blue text-3xl">
-                          chat
-                        </span>
+                        <span className="material-symbols-outlined text-brand-ocean-blue text-3xl">chat</span>
                         <div>
                           <p className="text-gray-500 text-sm">WhatsApp</p>
-                          <a
-                            href="https://wa.me/96894657347"
-                            className="text-gray-900 font-medium hover:underline"
-                          >
+                          <a href="https://wa.me/96894657347" className="text-gray-900 font-medium hover:underline">
                             +968 9465 7347
                           </a>
                         </div>
@@ -174,15 +232,10 @@ export default function Contact() {
 
                       {/* Email */}
                       <div className="flex items-start gap-4">
-                        <span className="material-symbols-outlined text-brand-ocean-blue text-3xl">
-                          mail
-                        </span>
+                        <span className="material-symbols-outlined text-brand-ocean-blue text-3xl">mail</span>
                         <div>
                           <p className="text-gray-500 text-sm">Email</p>
-                          <a
-                            href="mailto:info@zaykenprojects.com"
-                            className="text-gray-900 font-medium hover:underline"
-                          >
+                          <a href="mailto:info@zaykenprojects.com" className="text-gray-900 font-medium hover:underline">
                             info@zaykenprojects.com
                           </a>
                         </div>
@@ -190,9 +243,7 @@ export default function Contact() {
 
                       {/* Address */}
                       <div className="flex items-start gap-4">
-                        <span className="material-symbols-outlined text-brand-ocean-blue text-3xl">
-                          location_on
-                        </span>
+                        <span className="material-symbols-outlined text-brand-ocean-blue text-3xl">location_on</span>
                         <div>
                           <p className="text-gray-500 text-sm">Address</p>
                           <p className="text-gray-900 font-medium">
@@ -201,7 +252,6 @@ export default function Contact() {
                           </p>
                         </div>
                       </div>
-
                     </div>
                   </div>
                 </div>
@@ -209,7 +259,6 @@ export default function Contact() {
               </section>
             </div>
           </main>
-
         </div>
       </div>
     </div>
