@@ -98,7 +98,7 @@ export default function Services() {
 
                 <Link
                   to="/contact"
-                  className="flex min-w-[140px] items-center justify-center rounded-lg h-12 px-6 bg-brand-ocean-blue text-white font-bold shadow-soft hover:opacity-90 transition-all"
+                  className="flex min-w-[140px] cursor-pointer items-center justify-center rounded-lg h-12 px-6 bg-brand-ocean-blue text-white font-bold shadow-soft transition-transform hover:scale-105"
                 >
                   Contact Us
                 </Link>

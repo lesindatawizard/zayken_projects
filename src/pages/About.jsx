@@ -196,11 +196,11 @@ export default function About() {
                 </p>
 
                 <div className="mt-2 flex flex-wrap justify-center gap-4">
-                  <button className="flex min-w-[140px] cursor-pointer items-center justify-center rounded-lg h-12 px-6 bg-brand-ocean-blue text-white text-base font-bold shadow-soft transition-all hover:opacity-90">
+                  <button className="flex min-w-[140px] cursor-pointer items-center justify-center rounded-lg h-12 px-6 bg-brand-ocean-blue text-white text-base font-bold shadow-soft transition-transform hover:scale-105">
                     View Services
                   </button>
-
-                  <button className="flex min-w-[140px] cursor-pointer items-center justify-center rounded-lg h-12 px-6 bg-transparent text-brand-ocean-blue ring-2 ring-brand-ocean-blue transition-colors hover:bg-brand-ocean-blue/10">
+  
+                  <button className="flex min-w-[140px] cursor-pointer items-center justify-center rounded-lg h-12 px-6 bg-transparent text-brand-ocean-blue ring-2 ring-brand-ocean-blue transition-transform hover:scale-105 hover:bg-brand-ocean-blue/10">
                     Contact Us
                   </button>
                 </div>

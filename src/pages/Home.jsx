@@ -264,13 +264,21 @@ export default function Home() {
                 ) : (
                   <div className="mx-auto mt-8 grid max-w-2xl grid-cols-1 gap-8 sm:grid-cols-2 lg:max-w-none lg:grid-cols-3">
                     {featuredProjects.map((project) => (
-                      <div key={project.id} className="overflow-hidden rounded-xl shadow-lg">
+                      <div key={project.id} className="group overflow-hidden rounded-xl shadow-lg relative">
                         {project.imageUrl && (
-                          <img
-                            alt={project.title || "Featured project"}
-                            className="h-80 w-full object-cover transition-transform duration-300 hover:scale-105"
-                            src={project.imageUrl}
-                          />
+                          <>
+                            <img
+                              alt={project.title || "Featured project"}
+                              className="h-80 w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                              src={project.imageUrl}
+                            />
+                            <div className="absolute inset-x-0 bottom-0 h-0 group-hover:h-[30%] bg-white/80 transition-all duration-300 ease-out flex items-end justify-center overflow-hidden">
+                              <div className="p-4 w-full text-center translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out">
+                                <p className="text-gray-900 font-semibold">{project.title || "Untitled"}</p>
+                                <p className="text-gray-700 text-sm mt-0.5">{project.category || ""}</p>
+                              </div>
+                            </div>
+                          </>
                         )}
                       </div>
                     ))}
@@ -377,7 +385,7 @@ export default function Home() {
     <div className="mt-2 flex flex-wrap justify-center gap-4">
       <Link
         to="/contact"
-        className="flex min-w-[140px] items-center justify-center rounded-lg h-12 px-6 bg-brand-ocean-blue text-white font-bold shadow-soft transition-all hover:opacity-90"
+        className="flex min-w-[140px] cursor-pointer items-center justify-center rounded-lg h-12 px-6 bg-brand-ocean-blue text-white font-bold shadow-soft transition-transform hover:scale-105"
       >
         Contact Us
       </Link>

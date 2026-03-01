@@ -18,6 +18,7 @@ import { AdminAuthProvider, RequireAdmin } from "./admin/AdminAuthContext";
 import AdminLogin from "./admin/AdminLogin";
 import AdminLayout from "./admin/AdminLayout";
 import AdminProjects from "./admin/AdminProjects";
+import AdminSettings from "./admin/AdminSettings";
 
 // Context
 import { PopupProvider } from "./context/PopupContext";
@@ -49,6 +50,16 @@ function App() {
                 <RequireAdmin>
                   <AdminLayout>
                     <AdminProjects />
+                  </AdminLayout>
+                </RequireAdmin>
+              }
+            />
+            <Route
+              path="/admin/settings"
+              element={
+                <RequireAdmin>
+                  <AdminLayout>
+                    <AdminSettings />
                   </AdminLayout>
                 </RequireAdmin>
               }

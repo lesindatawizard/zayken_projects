@@ -9,7 +9,7 @@ export default function Navbar() {
     <header className="sticky top-0 z-50 flex items-center justify-between whitespace-nowrap px-6 sm:px-10 lg:px-20 py-4 bg-white/80 backdrop-blur-sm border-b border-gray-200">
 
       {/* ⭐ LOGO + TEXT */}
- <div className="flex items-center gap-3 text-brand-navy">
+ <Link to="/" className="flex items-center gap-3 text-brand-navy cursor-pointer">
   <img
     src={zaykenLogo}
     alt="Zayken Projects logo"
@@ -19,7 +19,7 @@ export default function Navbar() {
   <h3 className="font-bold text-xl text-dark-charcoal -ml-5">
     Zayken <span className="font-light">Projects</span>
   </h3>
-</div>
+</Link>
 
 
       <nav className="hidden md:flex items-center gap-8">

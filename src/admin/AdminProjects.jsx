@@ -303,15 +303,18 @@ export default function AdminProjects() {
             </div>
             <div>
               <label className="mb-1 block text-sm font-medium text-gray-700">Category</label>
-              <input
-                type="text"
+              <select
                 name="category"
                 value={form.category}
                 onChange={handleChange}
                 className="h-10 w-full rounded-lg border border-gray-300 px-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-ocean-blue"
-                placeholder="e.g. Residential, Commercial, F&B"
                 required
-              />
+              >
+                <option value="">Select category</option>
+                <option value="Residential">Residential</option>
+                <option value="Commercial">Commercial</option>
+                <option value="F&B">F&B</option>
+              </select>
             </div>
             <div>
               <label className="mb-1 block text-sm font-medium text-gray-700">Order</label>

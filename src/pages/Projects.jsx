@@ -114,8 +114,11 @@ export default function Projects() {
                   className="group relative rounded-lg shadow-soft overflow-hidden bg-cover bg-center aspect-[3/4]"
                   style={{ backgroundImage: `url(${project.imageUrl})` }}
                 >
-                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center">
-                    <p className="text-white font-semibold">View Details</p>
+                  <div className="absolute inset-x-0 bottom-0 h-0 group-hover:h-[30%] bg-white/80 transition-all duration-300 ease-out flex items-end justify-center overflow-hidden">
+                    <div className="p-4 w-full text-center translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out">
+                      <p className="text-gray-900 font-semibold">{project.title || "Untitled"}</p>
+                      <p className="text-gray-700 text-sm mt-0.5">{project.category || ""}</p>
+                    </div>
                   </div>
                 </div>
               ))
@@ -133,11 +136,11 @@ export default function Projects() {
   </p>
 
   <div className="mt-2 flex flex-wrap justify-center gap-4">
-    <button className="flex min-w-[140px] cursor-pointer items-center justify-center rounded-lg h-12 px-6 bg-brand-ocean-blue text-white text-base font-bold shadow-soft transition-all hover:opacity-90">
+    <button className="flex min-w-[140px] cursor-pointer items-center justify-center rounded-lg h-12 px-6 bg-brand-ocean-blue text-white text-base font-bold shadow-soft transition-transform hover:scale-105">
       View Services
     </button>
 
-    <button className="flex min-w-[140px] cursor-pointer items-center justify-center rounded-lg h-12 px-6 bg-transparent text-brand-ocean-blue ring-2 ring-brand-ocean-blue transition-colors hover:bg-brand-ocean-blue/10">
+    <button className="flex min-w-[140px] cursor-pointer items-center justify-center rounded-lg h-12 px-6 bg-transparent text-brand-ocean-blue ring-2 ring-brand-ocean-blue transition-transform hover:scale-105 hover:bg-brand-ocean-blue/10">
       Contact Us
     </button>
   </div>

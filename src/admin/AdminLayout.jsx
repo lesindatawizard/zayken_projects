@@ -23,8 +23,17 @@ export default function AdminLayout({ children }) {
           <h1 className="text-lg font-bold text-gray-900">Zayken Admin</h1>
         </div>
         <nav className="flex-1 px-4 py-4 space-y-1">
-          <AdminNavLink to="/admin/projects" active={location.pathname.startsWith("/admin/projects")}>
+          <AdminNavLink
+            to="/admin/projects"
+            active={location.pathname.startsWith("/admin/projects")}
+          >
             Projects
+          </AdminNavLink>
+          <AdminNavLink
+            to="/admin/settings"
+            active={location.pathname.startsWith("/admin/settings")}
+          >
+            Settings
           </AdminNavLink>
         </nav>
         <div className="px-4 py-4 border-t border-gray-200 text-sm text-gray-600 flex items-center justify-between">

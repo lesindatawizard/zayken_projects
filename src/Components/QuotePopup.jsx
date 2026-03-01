@@ -197,10 +197,20 @@ export default function QuotePopup() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-  
+
     const newErrors = runValidationForAll();
+
+    // Mark all required fields as touched so their error messages show
+    setTouched((prev) => {
+      const allTouched = {};
+      Object.keys(validators).forEach((key) => {
+        allTouched[key] = true;
+      });
+      return { ...prev, ...allTouched };
+    });
+
     if (Object.keys(newErrors).length) return;
-  
+
     // Immediately close the quote form and show a global submitting modal
     showQuoteSubmitting();
     closeQuote();
@@ -801,50 +811,19 @@ export default function QuotePopup() {
           </label>
         </div>
 
-        {/* ATTACHMENTS */}
-        <div className="mt-6">
-          <label className="flex flex-col">
-            <span className="text-sm font-medium text-gray-800 mb-2">
-              Upload Files (Optional)
-            </span>
-
-            <input
-              type="file"
-              name="attachments"
-              multiple
-              accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-              onChange={(e) =>
-                setForm((prev) => ({
-                  ...prev,
-                  attachments: Array.from(e.target.files),
-                }))
-              }
-              className="w-full border border-gray-300 rounded-lg p-3 bg-white cursor-pointer file:mr-4 
-                        file:py-2 file:px-4 file:rounded-md file:border file:border-gray-300
-                        file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200"
-            />
-
-            <p className="text-xs text-gray-500 mt-1">
-              Supported formats: PDF, JPG, PNG, DOC (Max 10MB each)
-            </p>
-
-            {form.attachments.length > 0 && (
-              <ul className="mt-2 pl-4 list-disc text-sm text-gray-700">
-                {form.attachments.map((file, i) => (
-                  <li key={i}>{file.name}</li>
-                ))}
-              </ul>
-            )}
-          </label>
-        </div>
+        
 
         {/* Footer Buttons */}
         <div className="border-t border-gray-300 p-4 bg-white flex justify-end gap-3 mt-4">
-          <button type="button" onClick={closeQuote} className="h-10 px-4 rounded-lg font-medium border border-gray-300">
+          <button
+            type="button"
+            onClick={closeQuote}
+            className="h-10 px-4 rounded-lg font-medium border border-gray-300 cursor-pointer transition-transform hover:scale-105"
+          >
             Cancel
           </button>
 
-          <button type="submit" className="h-10 px-6 rounded-lg font-bold text-white bg-brand-ocean-blue hover:bg-brand-ocean-blue/90 shadow">
+          <button type="submit" className="h-10 px-6 rounded-lg font-bold text-white bg-brand-ocean-blue hover:bg-brand-ocean-blue/90 shadow-soft cursor-pointer transition-transform hover:scale-105">
             Submit Request
           </button>
         </div>
