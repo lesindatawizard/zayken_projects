@@ -2,7 +2,15 @@ import { usePopup } from "../context/PopupContext";
 import { useEffect, useState } from "react";
 
 export default function QuotePopup() {
-  const { isQuoteOpen, closeQuote } = usePopup();
+  const {
+    isQuoteOpen,
+    closeQuote,
+    quoteStatus,
+    showQuoteSubmitting,
+    showQuoteSuccess,
+    showQuoteError,
+    closeQuoteStatus,
+  } = usePopup();
 
   const emptyForm = {
     name: "",
@@ -47,7 +55,8 @@ export default function QuotePopup() {
     }
   }, [isQuoteOpen]);
 
-  if (!isQuoteOpen) return null;
+  // If neither the quote form nor the status modal is open, render nothing
+  if (!isQuoteOpen && !quoteStatus.open) return null;
 
   // Option Lists
   const commercialSpaceOptions = ["Office", "Retail", "Clinic", "Warehouse", "Other"];
@@ -186,18 +195,16 @@ export default function QuotePopup() {
     arr.forEach((item) => fd.append(key, item));
   }
 
-  // 👉 THEN ADD showToast() HERE
-  function showToast(message, type = "info", duration = 4000) {
-    setToast({ show: true, message, type });
-    setTimeout(() => setToast((t) => ({ ...t, show: false })), duration);
-  }
-
   async function handleSubmit(e) {
     e.preventDefault();
   
     const newErrors = runValidationForAll();
     if (Object.keys(newErrors).length) return;
   
+    // Immediately close the quote form and show a global submitting modal
+    showQuoteSubmitting();
+    closeQuote();
+
     try {
       const fd = new FormData();
   
@@ -232,28 +239,19 @@ export default function QuotePopup() {
       });
   
       const data = await res.json();
-  
-      if (data.success) {
-        showToast("Quote sent successfully!", "success", 10000);
 
+      if (data.success) {
+        setForm({ ...emptyForm });
+        showQuoteSuccess();
         setTimeout(() => {
-          setForm({ ...emptyForm });
-          closeQuote();
-        }, 4000); // ❗ delay closing by 1 second
-      } else {
-        showToast("Failed to send quote.", "error", 10000);
-        setTimeout(() => {
-          setForm({ ...emptyForm });
-          closeQuote();
+          closeQuoteStatus();
         }, 4000);
+      } else {
+        showQuoteError("Failed to send quote.");
       }
     } catch (err) {
       console.error("Submit error:", err);
-      showToast("Server error. Try again.", "error", 10000);
-      setTimeout(() => {
-        setForm({ ...emptyForm });
-        closeQuote();
-      }, 4000);
+      showQuoteError("Server error. Try again.");
     }
   }
 
@@ -264,50 +262,71 @@ export default function QuotePopup() {
 
   return (
     <>
-      {/* CENTER-BOTTOM TOAST */}
-      {toast.show && (
-  <div
-    aria-live="polite"
-    aria-atomic="true"
-    className="fixed inset-x-0 bottom-6 flex items-center justify-center pointer-events-none z-[1000]"
-  >
-    <div
-      role="status"
-      className={`pointer-events-auto transform transition-all duration-300
-      opacity-100 translate-y-0 rounded-md py-3 px-5 max-w-lg w-full mx-4`}
-      style={{
-        backgroundColor: "rgba(42,140,255,0.4)",
-        boxShadow: "0 6px 20px rgba(42,140,255,0.12)",
-        color: "#fff",
-        textAlign: "center",
-        backdropFilter: "saturate(120%) blur(4px)",
-      }}
-    >
-      <div className="flex items-center justify-center gap-3">
-        <svg
-          className="w-5 h-5 flex-shrink-0"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          style={{ color: "#fff" }}
-        >
-          {toast.type === "success" ? (
-            <path d="M20 6L9 17l-5-5" />
-          ) : (
-            <path d="M12 9v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          )}
-        </svg>
+      {/* SUBMITTING / SUCCESS / ERROR MODAL */}
+      {quoteStatus.open && (
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50 px-4">
+          <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-2xl text-center">
+            {/* Icon */}
+            <div className="mb-4 flex justify-center">
+              {quoteStatus.phase === "loading" && (
+                <div className="h-10 w-10 animate-spin rounded-full border-4 border-brand-ocean-blue border-t-transparent" />
+              )}
+              {quoteStatus.phase === "success" && (
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500 text-white">
+                  <svg
+                    className="h-6 w-6"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M20 6L9 17l-5-5" />
+                  </svg>
+                </div>
+              )}
+              {quoteStatus.phase === "error" && (
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-500 text-white">
+                  <svg
+                    className="h-6 w-6"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M12 9v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+              )}
+            </div>
 
-        <div className="text-sm font-medium">{toast.message}</div>
-      </div>
-    </div>
-  </div>
-)}
+            {/* Message */}
+            <h2 className="text-lg font-semibold text-gray-900">
+              {quoteStatus.phase === "loading" && "Submitting your quote"}
+              {quoteStatus.phase === "success" && "Quote submitted"}
+              {quoteStatus.phase === "error" && "Something went wrong"}
+            </h2>
+            <p className="mt-2 text-sm text-gray-600">{quoteStatus.message}</p>
 
-      <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
+            {quoteStatus.phase !== "loading" && (
+              <button
+                type="button"
+                onClick={closeQuoteStatus}
+                className="mt-4 inline-flex items-center justify-center rounded-lg bg-brand-ocean-blue px-4 py-2 text-sm font-semibold text-white shadow-soft hover:opacity-90"
+              >
+                Close
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* QUOTE FORM MODAL */}
+      {isQuoteOpen && (
+        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
       {/* Overlay */}
       <div className="absolute inset-0 bg-black/50" onClick={closeQuote} />
 
@@ -831,8 +850,9 @@ export default function QuotePopup() {
         </div>
 
       </form>
+      </div>
     </div>
-  </div>
+      )}
   </>
 );
 }

@@ -1,15 +1,54 @@
-import { useState } from "react";
-import projectsData from "../data/projectsData";
-
-const categories = ["All", "Commercial", "F&B", "Residential"];
+import { useEffect, useMemo, useState } from "react";
+import { collection, onSnapshot } from "firebase/firestore";
+import { db } from "../firebase";
 
 export default function Projects() {
+  const [projects, setProjects] = useState([]);
+  const [categories, setCategories] = useState(["All"]);
   const [selectedCategory, setSelectedCategory] = useState("All");
+
+  useEffect(() => {
+    const projectsRef = collection(db, "projects");
+    const unsubscribe = onSnapshot(
+      projectsRef,
+      (snapshot) => {
+        const items = snapshot.docs.map((d) => ({
+          id: d.id,
+          ...d.data(),
+        }));
+        setProjects(items);
+      },
+      (err) => {
+        console.error("Failed to load projects", err);
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const unique = Array.from(
+      new Set(
+        projects
+          .map((p) => p.category)
+          .filter((c) => typeof c === "string" && c.trim().length > 0)
+      )
+    );
+    setCategories(["All", ...unique]);
+  }, [projects]);
+
+  const sortedProjects = useMemo(() => {
+    return [...projects].sort((a, b) => {
+      const ao = typeof a.order === "number" ? a.order : 0;
+      const bo = typeof b.order === "number" ? b.order : 0;
+      return ao - bo;
+    });
+  }, [projects]);
 
   const filteredProjects =
     selectedCategory === "All"
-      ? projectsData
-      : projectsData.filter((p) => p.category === selectedCategory);
+      ? sortedProjects
+      : sortedProjects.filter((p) => p.category === selectedCategory);
 
   return (
     <div
@@ -64,17 +103,23 @@ export default function Projects() {
 
           {/* PROJECT GRID */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-6xl mx-auto mt-8 px-4">
-            {filteredProjects.map((project) => (
-              <div
-                key={project.id}
-                className="group relative rounded-lg shadow-soft overflow-hidden bg-cover bg-center aspect-[3/4]"
-                style={{ backgroundImage: `url(${project.image})` }}
-              >
-                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center">
-                  <p className="text-white font-semibold">View Details</p>
+            {filteredProjects.length === 0 ? (
+              <p className="col-span-full text-center text-gray-600">
+                No projects found for this category.
+              </p>
+            ) : (
+              filteredProjects.map((project) => (
+                <div
+                  key={project.id}
+                  className="group relative rounded-lg shadow-soft overflow-hidden bg-cover bg-center aspect-[3/4]"
+                  style={{ backgroundImage: `url(${project.imageUrl})` }}
+                >
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center">
+                    <p className="text-white font-semibold">View Details</p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
 
 {/* CTA */}

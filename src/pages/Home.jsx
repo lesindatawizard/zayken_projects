@@ -1,8 +1,33 @@
-import zaykenLogo from "../assets/zayken_projects_logo.svg";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import heroBg from "../assets/homepage_hero_bg.jpg";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { db } from "../firebase";
 
 export default function Home() {
+  const [featuredProjects, setFeaturedProjects] = useState([]);
+  const [loadingFeatured, setLoadingFeatured] = useState(true);
+
+  useEffect(() => {
+    async function loadFeatured() {
+      try {
+        const q = query(
+          collection(db, "projects"),
+          where("featured", "==", true)
+        );
+        const snapshot = await getDocs(q);
+        const items = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+        setFeaturedProjects(items.slice(0, 3));
+      } catch (err) {
+        console.error("Failed to load featured projects", err);
+      } finally {
+        setLoadingFeatured(false);
+      }
+    }
+
+    loadFeatured();
+  }, []);
+
   return (
     <div className="font-display text-gray-800">
       <div
@@ -230,37 +255,35 @@ export default function Home() {
                   </h2>
                 </div>
 
-                <div className="mx-auto mt-8 grid max-w-2xl grid-cols-1 gap-8 sm:grid-cols-2 lg:max-w-none lg:grid-cols-3">
-                  <div className="overflow-hidden rounded-xl shadow-lg">
-                    <img
-                      alt="A minimalist and bright living room with modern furniture."
-                      className="h-80 w-full object-cover transition-transform duration-300 hover:scale-105"
-                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuDeRG6H4vXOwANyy28n3UO4PDk7MKL4lBnAorg858k57w4ONCkBcNSy4AaywMchGQi-afTuqBjMmkuwNhs2TGCMdvscRoRTTAa2YqhQXLYaFbE0gdYIfn50ElnBAeUwOATfuOFXgVzHTq0TkNjpHBjVfJ2dvLEUjKaZUIxHI8SioPPNhsF-ChsbUAKZ5T1D19fktY8TMZ38xGcOqvoh4Q-HBcIklSF44Fizxig9atNUKtxfhCRWQiWOeq2VEi3betXcHmW0YoFsOTik"
-                    />
+                {loadingFeatured ? (
+                  <p className="mt-6 text-center text-gray-600">Loading featured projects...</p>
+                ) : featuredProjects.length === 0 ? (
+                  <p className="mt-6 text-center text-gray-600">
+                    No featured projects yet. Mark some as featured in the admin panel.
+                  </p>
+                ) : (
+                  <div className="mx-auto mt-8 grid max-w-2xl grid-cols-1 gap-8 sm:grid-cols-2 lg:max-w-none lg:grid-cols-3">
+                    {featuredProjects.map((project) => (
+                      <div key={project.id} className="overflow-hidden rounded-xl shadow-lg">
+                        {project.imageUrl && (
+                          <img
+                            alt={project.title || "Featured project"}
+                            className="h-80 w-full object-cover transition-transform duration-300 hover:scale-105"
+                            src={project.imageUrl}
+                          />
+                        )}
+                      </div>
+                    ))}
                   </div>
-                  <div className="overflow-hidden rounded-xl shadow-lg">
-                    <img
-                      alt="A cozy bedroom interior with neutral colors and soft lighting."
-                      className="h-80 w-full object-cover transition-transform duration-300 hover:scale-105"
-                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuDCckckEGCNL-e6WBfVnLUNRjt208NIUd8xw88qEgfr7a83n8_w63Vd6q4iyv8oBqebyvtZplXO84a3KkCV0MmSUcUYofIU5bpBQ1MfFmLhEytJZqtpQPcoBnSqaqIbnMnhyP0wpK8GwH-BJBW4_Bkh5vR3QvjMUGtohVARJIrvBkfyTEJG-z9VFAxVw0lY4TExy5xdOYNf6xZTnJr0u44dbUVcNzrhbIJuG4QtDWfp_gi4alU5l0itHLhlnYfhJwla1G8oByDxHXN3"
-                    />
-                  </div>
-                  <div className="overflow-hidden rounded-xl shadow-lg">
-                    <img
-                      alt="An open-plan modern kitchen and dining area with wooden accents."
-                      className="h-80 w-full object-cover transition-transform duration-300 hover:scale-105"
-                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuBfZF0Ft6dxc3o_9HlwMMEdW1p3oxmmvaW9spo1oKPkFTnuShOSZKBt7dGJfWv9hp-vw2LehnBm_85bLEzLO7Mf2swrNelP2D_spcgvFNAZ2RLAEIb840NslgUeTsvrQDgk06rx9nGZVUHAXemQbnVYlcBFTxBA2zdt2HQeltcXDQSsUXIJOD5WyhyLbGY5khrMogLDvStAJT8L_8PjN8wZk7eCNH8viOd6ZkBbhv3KzHhDzw8D_JSG9eVoaXWk9SwAGaEkogrYhlg-"
-                    />
-                  </div>
-                </div>
+                )}
 
                 <div className="mt-16 flex justify-center">
-                <Link
-  to="/projects"
-  className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-brand-ocean-blue text-white text-base font-bold shadow-lg transition-transform hover:scale-105"
->
-  <span className="truncate">Explore All Projects</span>
-</Link>
+                  <Link
+                    to="/projects"
+                    className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-brand-ocean-blue text-white text-base font-bold shadow-lg transition-transform hover:scale-105"
+                  >
+                    <span className="truncate">Explore All Projects</span>
+                  </Link>
                 </div>
               </div>
             </section>
