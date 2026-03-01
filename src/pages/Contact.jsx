@@ -23,11 +23,15 @@ export default function Contact() {
   const validators = {
     name: (v) => (v.trim() ? "" : "Name is required"),
     phone: (v) =>
-      /^[0-9+()\-.\s]{6,}$/.test(v)
+      !v.trim()
+        ? "Phone number is required"
+        : /^[0-9+()\-.\s]{6,}$/.test(v)
         ? ""
         : "Enter a valid phone number",
     email: (v) =>
-      /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)
+      !v.trim()
+        ? "Email is required"
+        : /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)
         ? ""
         : "Enter a valid email address",
     projectType: (v) => (v ? "" : "Please select a project type"),
@@ -79,6 +83,15 @@ export default function Contact() {
     e.preventDefault();
 
     const newErrors = runValidationForAll();
+    // Mark all validated fields as touched so their error messages show
+    setTouched((prev) => {
+      const allTouched = {};
+      Object.keys(validators).forEach((key) => {
+        allTouched[key] = true;
+      });
+      return { ...prev, ...allTouched };
+    });
+
     if (Object.keys(newErrors).length > 0) return;
 
     try {
