@@ -23,6 +23,7 @@ import AdminSettings from "./admin/AdminSettings";
 // Context
 import { PopupProvider } from "./context/PopupContext";
 
+//Functions
 function App() {
   return (
     <PopupProvider>
