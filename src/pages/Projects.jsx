@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "../firebase";
 
@@ -82,7 +83,7 @@ export default function Projects() {
           </section>
 
 {/* CATEGORY FILTERS */}
-<div className="flex justify-center mt-8 gap-6 border-b border-gray-300 pb-3">
+<div className="flex justify-center mt-8 gap-6 border-b border-gray-300 pb-3 overflow-x-auto no-scrollbar">
   {categories.map((cat) => (
     <button
       key={cat}
@@ -102,7 +103,8 @@ export default function Projects() {
 </div>
 
           {/* PROJECT GRID */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-6xl mx-auto mt-8 px-4">
+          <ProjectsMobileCarousel projects={filteredProjects} />
+          <div className="hidden sm:grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-6xl mx-auto mt-8 px-4">
             {filteredProjects.length === 0 ? (
               <p className="col-span-full text-center text-gray-600">
                 No projects found for this category.
@@ -136,13 +138,19 @@ export default function Projects() {
   </p>
 
   <div className="mt-2 flex flex-wrap justify-center gap-4">
-    <button className="flex min-w-[140px] cursor-pointer items-center justify-center rounded-lg h-12 px-6 bg-brand-ocean-blue text-white text-base font-bold shadow-soft transition-transform hover:scale-105">
+    <Link
+      to="/services"
+      className="flex min-w-[140px] cursor-pointer items-center justify-center rounded-lg h-12 px-6 bg-brand-ocean-blue text-white text-base font-bold shadow-soft transition-transform hover:scale-105"
+    >
       View Services
-    </button>
+    </Link>
 
-    <button className="flex min-w-[140px] cursor-pointer items-center justify-center rounded-lg h-12 px-6 bg-transparent text-brand-ocean-blue ring-2 ring-brand-ocean-blue transition-transform hover:scale-105 hover:bg-brand-ocean-blue/10">
+    <Link
+      to="/contact"
+      className="flex min-w-[140px] cursor-pointer items-center justify-center rounded-lg h-12 px-6 bg-transparent text-brand-ocean-blue ring-2 ring-brand-ocean-blue transition-transform hover:scale-105 hover:bg-brand-ocean-blue/10"
+    >
       Contact Us
-    </button>
+    </Link>
   </div>
 </section>
 
@@ -151,3 +159,73 @@ export default function Projects() {
         </div>
     );
     }
+
+function ProjectsMobileCarousel({ projects }) {
+  const trackRef = useRef(null);
+  const [active, setActive] = useState(0);
+
+  useEffect(() => {
+    setActive(0);
+    if (trackRef.current) {
+      trackRef.current.scrollTo({ left: 0, behavior: "instant" });
+    }
+  }, [projects]);
+
+  function handleScroll() {
+    if (!trackRef.current) return;
+    const width = trackRef.current.clientWidth;
+    setActive(Math.round(trackRef.current.scrollLeft / Math.max(width, 1)));
+  }
+
+  function goTo(index) {
+    if (!trackRef.current) return;
+    trackRef.current.scrollTo({
+      left: index * trackRef.current.clientWidth,
+      behavior: "smooth",
+    });
+    setActive(index);
+  }
+
+  return (
+    <div className="mt-8 sm:hidden px-1">
+      {projects.length === 0 ? (
+        <p className="text-center text-gray-600">No projects found for this category.</p>
+      ) : (
+        <>
+          <div
+            ref={trackRef}
+            onScroll={handleScroll}
+            className="flex gap-4 overflow-x-auto snap-x snap-mandatory no-scrollbar"
+          >
+            {projects.map((project) => (
+              <div key={project.id} className="w-full shrink-0 snap-center">
+                <div
+                  className="relative rounded-lg shadow-soft overflow-hidden bg-cover bg-center aspect-[3/4]"
+                  style={{ backgroundImage: `url(${project.imageUrl})` }}
+                >
+                  <div className="absolute inset-x-0 bottom-0 bg-white/85 p-3 text-center">
+                    <p className="text-gray-900 font-semibold">{project.title || "Untitled"}</p>
+                    <p className="text-gray-700 text-sm mt-0.5">{project.category || ""}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-3 flex items-center justify-center gap-2">
+            {projects.map((_, index) => (
+              <button
+                key={index}
+                type="button"
+                aria-label={`Go to project slide ${index + 1}`}
+                onClick={() => goTo(index)}
+                className={`h-2.5 rounded-full transition-all ${
+                  index === active ? "w-6 bg-brand-ocean-blue" : "w-2.5 bg-gray-300"
+                }`}
+              />
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}

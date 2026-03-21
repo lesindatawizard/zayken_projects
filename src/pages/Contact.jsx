@@ -273,11 +273,9 @@ export default function Contact() {
                         }`}
                       >
                         <option value="">Select project type</option>
-                        <option>Commercial Fit-out</option>
-                        <option>Residential Interior</option>
-                        <option>Retail Design</option>
-                        <option>Office Renovation</option>
-                        <option>Other</option>
+                        <option value="Commercial">Commercial</option>
+                        <option value="Residential">Residential</option>
+                        <option value="F&B">F&amp;B</option>
                       </select>
                       {errors.projectType && touched.projectType && (
                         <p className="text-sm text-red-600 mt-1">{errors.projectType}</p>

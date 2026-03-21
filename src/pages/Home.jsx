@@ -1,30 +1,55 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import heroBg from "../assets/homepage_hero_bg.jpg";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../firebase";
+import { usePopup } from "../context/PopupContext";
+
+const services = [
+  { icon: "design_services", title: "Turnkey Interior Fit-Out" },
+  { icon: "foundation", title: "Construction" },
+  { icon: "hvac", title: "MEP & HVAC" },
+  { icon: "construction", title: "Maintenance" },
+  { icon: "carpenter", title: "Joinery" },
+  { icon: "architecture", title: "Design & Build" },
+];
+
+const whyChooseUs = [
+  {
+    icon: "eco",
+    title: "Sustainable",
+    body: "We prioritize eco-friendly materials and practices to create spaces that are both beautiful and responsible.",
+  },
+  {
+    icon: "savings",
+    title: "Affordable",
+    body: "Delivering high-quality results without compromising your budget is our core commitment.",
+  },
+  {
+    icon: "lightbulb",
+    title: "Innovation",
+    body: "We leverage the latest trends and technologies to build innovative and future-proof interiors.",
+  },
+];
 
 export default function Home() {
+  const { openQuote } = usePopup();
   const [featuredProjects, setFeaturedProjects] = useState([]);
   const [loadingFeatured, setLoadingFeatured] = useState(true);
 
   useEffect(() => {
     async function loadFeatured() {
       try {
-        const q = query(
-          collection(db, "projects"),
-          where("featured", "==", true)
-        );
+        const q = query(collection(db, "projects"), where("featured", "==", true));
         const snapshot = await getDocs(q);
         const items = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
-        setFeaturedProjects(items.slice(0, 3));
+        setFeaturedProjects(items.slice(0, 6));
       } catch (err) {
         console.error("Failed to load featured projects", err);
       } finally {
         setLoadingFeatured(false);
       }
     }
-
     loadFeatured();
   }, []);
 
@@ -42,9 +67,8 @@ export default function Home() {
         }}
       >
         <div className="flex h-full grow flex-col w-full backdrop-blur-effect">
-          
-        <main className="w-full max-w-7xl mx-auto flex-1 px-4 py-8 md:px-6 md:py-12 lg:py-16">
-        <div className="flex flex-col gap-16 md:gap-20 lg:gap-24">
+          <main className="w-full max-w-7xl mx-auto flex-1 px-4 py-8 md:px-6 md:py-12 lg:py-16">
+            <div className="flex flex-col gap-16 md:gap-20 lg:gap-24">
 {/* HERO */}
 <section
   className="relative flex min-h-[280px] flex-col items-center justify-center overflow-hidden rounded-xl bg-white p-8 text-center shadow-soft md:min-h-[340px]"
@@ -81,7 +105,10 @@ export default function Home() {
         <span className="truncate">View Our Projects</span>
       </Link>
 
-      <button className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-white border-2 border-brand-sky-blue text-brand-ocean-blue text-base font-bold shadow-lg transition-transform hover:scale-105 hover:bg-brand-sky-blue/10">
+      <button
+        onClick={openQuote}
+        className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-white border-2 border-brand-sky-blue text-brand-ocean-blue text-base font-bold shadow-lg transition-transform hover:scale-105 hover:bg-brand-sky-blue/10"
+      >
         <span className="truncate">Click for a free Quote</span>
       </button>
     </div>
@@ -144,81 +171,34 @@ export default function Home() {
       </p>
     </div>
 
-    {/* Service Cards */}
-    <div className="mx-auto mt-10 grid max-w-2xl grid-cols-1 gap-6 sm:grid-cols-2 lg:max-w-none lg:grid-cols-3">
-      
-      {/* Card 1 */}
-      <div className="group flex flex-col items-center text-center p-8 bg-white rounded-xl shadow-soft transition-all duration-300 hover:shadow-lg hover:ring-2 hover:ring-brand-ocean-blue/50">
-        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-brand-ocean-blue/10">
-          <span className="material-symbols-outlined text-brand-ocean-blue text-3xl">
-            design_services
-          </span>
+    <MobileCarousel
+      items={services}
+      renderItem={(service) => (
+        <div className="group flex h-52 flex-col items-center justify-center text-center p-8 bg-white rounded-xl shadow-soft">
+          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-brand-ocean-blue/10">
+            <span className="material-symbols-outlined text-brand-ocean-blue text-3xl">
+              {service.icon}
+            </span>
+          </div>
+          <h3 className="mt-4 text-lg font-semibold text-gray-900">{service.title}</h3>
         </div>
-        <h3 className="mt-4 text-lg font-semibold text-gray-900">
-          Turnkey Interior Fit-Out
-        </h3>
-      </div>
+      )}
+    />
 
-      {/* Card 2 */}
-      <div className="group flex flex-col items-center text-center p-8 bg-white rounded-xl shadow-soft transition-all duration-300 hover:shadow-lg hover:ring-2 hover:ring-brand-ocean-blue/50">
-        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-brand-ocean-blue/10">
-          <span className="material-symbols-outlined text-brand-ocean-blue text-3xl">
-            foundation
-          </span>
+    <div className="mx-auto mt-10 hidden max-w-2xl grid-cols-1 gap-6 sm:grid md:grid-cols-2 lg:max-w-none lg:grid-cols-3">
+      {services.map((service) => (
+        <div
+          key={service.title}
+          className="group flex min-h-[208px] flex-col items-center text-center p-8 bg-white rounded-xl shadow-soft transition-all duration-300 hover:shadow-lg hover:ring-2 hover:ring-brand-ocean-blue/50"
+        >
+          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-brand-ocean-blue/10">
+            <span className="material-symbols-outlined text-brand-ocean-blue text-3xl">
+              {service.icon}
+            </span>
+          </div>
+          <h3 className="mt-4 text-lg font-semibold text-gray-900">{service.title}</h3>
         </div>
-        <h3 className="mt-4 text-lg font-semibold text-gray-900">
-          Construction
-        </h3>
-      </div>
-
-      {/* Card 3 */}
-      <div className="group flex flex-col items-center text-center p-8 bg-white rounded-xl shadow-soft transition-all duration-300 hover:shadow-lg hover:ring-2 hover:ring-brand-ocean-blue/50">
-        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-brand-ocean-blue/10">
-          <span className="material-symbols-outlined text-brand-ocean-blue text-3xl">
-            hvac
-          </span>
-        </div>
-        <h3 className="mt-4 text-lg font-semibold text-gray-900">
-          MEP &amp; HVAC
-        </h3>
-      </div>
-
-      {/* Card 4 */}
-      <div className="group flex flex-col items-center text-center p-8 bg-white rounded-xl shadow-soft transition-all duration-300 hover:shadow-lg hover:ring-2 hover:ring-brand-ocean-blue/50">
-        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-brand-ocean-blue/10">
-          <span className="material-symbols-outlined text-brand-ocean-blue text-3xl">
-            construction
-          </span>
-        </div>
-        <h3 className="mt-4 text-lg font-semibold text-gray-900">
-          Maintenance
-        </h3>
-      </div>
-
-      {/* Card 5 */}
-      <div className="group flex flex-col items-center text-center p-8 bg-white rounded-xl shadow-soft transition-all duration-300 hover:shadow-lg hover:ring-2 hover:ring-brand-ocean-blue/50">
-        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-brand-ocean-blue/10">
-          <span className="material-symbols-outlined text-brand-ocean-blue text-3xl">
-            carpenter
-          </span>
-        </div>
-        <h3 className="mt-4 text-lg font-semibold text-gray-900">
-          Joinery
-        </h3>
-      </div>
-
-      {/* Card 6 */}
-      <div className="group flex flex-col items-center text-center p-8 bg-white rounded-xl shadow-soft transition-all duration-300 hover:shadow-lg hover:ring-2 hover:ring-brand-ocean-blue/50">
-        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-brand-ocean-blue/10">
-          <span className="material-symbols-outlined text-brand-ocean-blue text-3xl">
-            architecture
-          </span>
-        </div>
-        <h3 className="mt-4 text-lg font-semibold text-gray-900">
-          Design &amp; Build
-        </h3>
-      </div>
-
+      ))}
     </div>
   </div>
 </section>
@@ -262,27 +242,52 @@ export default function Home() {
                     No featured projects yet. Mark some as featured in the admin panel.
                   </p>
                 ) : (
-                  <div className="mx-auto mt-8 grid max-w-2xl grid-cols-1 gap-8 sm:grid-cols-2 lg:max-w-none lg:grid-cols-3">
-                    {featuredProjects.map((project) => (
-                      <div key={project.id} className="group overflow-hidden rounded-xl shadow-lg relative">
-                        {project.imageUrl && (
-                          <>
+                  <>
+                    <MobileCarousel
+                      items={featuredProjects}
+                      renderItem={(project) => (
+                        <div className="overflow-hidden rounded-xl shadow-lg relative bg-white">
+                          {project.imageUrl ? (
+                            <img
+                              alt={project.title || "Featured project"}
+                              className="h-80 w-full object-cover"
+                              src={project.imageUrl}
+                            />
+                          ) : (
+                            <div className="h-80 w-full bg-gray-100 flex items-center justify-center text-gray-500">
+                              No image
+                            </div>
+                          )}
+                          <div className="p-4 text-center">
+                            <p className="text-gray-900 font-semibold">{project.title || "Untitled"}</p>
+                            <p className="text-gray-700 text-sm mt-0.5">{project.category || ""}</p>
+                          </div>
+                        </div>
+                      )}
+                    />
+
+                    <div className="mx-auto mt-8 hidden max-w-2xl grid-cols-1 gap-8 sm:grid-cols-2 lg:grid lg:max-w-none lg:grid-cols-3">
+                      {featuredProjects.map((project) => (
+                        <div key={project.id} className="group overflow-hidden rounded-xl shadow-lg relative bg-white">
+                          {project.imageUrl ? (
                             <img
                               alt={project.title || "Featured project"}
                               className="h-80 w-full object-cover transition-transform duration-300 group-hover:scale-105"
                               src={project.imageUrl}
                             />
-                            <div className="absolute inset-x-0 bottom-0 h-0 group-hover:h-[30%] bg-white/80 transition-all duration-300 ease-out flex items-end justify-center overflow-hidden">
-                              <div className="p-4 w-full text-center translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out">
-                                <p className="text-gray-900 font-semibold">{project.title || "Untitled"}</p>
-                                <p className="text-gray-700 text-sm mt-0.5">{project.category || ""}</p>
-                              </div>
+                          ) : (
+                            <div className="h-80 w-full bg-gray-100 flex items-center justify-center text-gray-500">
+                              No image
                             </div>
-                          </>
-                        )}
-                      </div>
-                    ))}
-                  </div>
+                          )}
+                          <div className="p-4 w-full text-center">
+                            <p className="text-gray-900 font-semibold">{project.title || "Untitled"}</p>
+                            <p className="text-gray-700 text-sm mt-0.5">{project.category || ""}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </>
                 )}
 
                 <div className="mt-16 flex justify-center">
@@ -307,66 +312,29 @@ export default function Home() {
       </h2>
     </div>
 
-    {/* Feature Cards */}
-    <div className="mt-8 grid grid-cols-1 gap-12 text-center md:grid-cols-3">
-
-      {/* Card 1 */}
-      <div className="flex flex-col items-center bg-white p-8 rounded-xl shadow-soft hover:shadow-lg transition-shadow">
-        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-ocean-blue/10 mb-4">
-          <span className="material-symbols-outlined text-brand-ocean-blue text-4xl">
-            eco
-          </span>
+    <MobileCarousel
+      items={whyChooseUs}
+      renderItem={(item) => (
+        <div className="flex min-h-[320px] flex-col items-center bg-white p-8 rounded-xl shadow-soft text-center">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-ocean-blue/10 mb-4">
+            <span className="material-symbols-outlined text-brand-ocean-blue text-4xl">{item.icon}</span>
+          </div>
+          <h3 className="text-xl font-semibold text-gray-900">{item.title}</h3>
+          <p className="mt-2 text-gray-600">{item.body}</p>
         </div>
-        <h3 className="text-xl font-semibold text-gray-900">
-          Sustainable
-        </h3>
-        <p className="mt-2 text-gray-600">
-          We prioritize eco-friendly materials and practices to create spaces
-          that are both{" "}
-          <span className="text-brand-ocean-blue font-medium">
-            beautiful and responsible
-          </span>.
-        </p>
-      </div>
+      )}
+    />
 
-      {/* Card 2 */}
-      <div className="flex flex-col items-center bg-white p-8 rounded-xl shadow-soft hover:shadow-lg transition-shadow">
-        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-ocean-blue/10 mb-4">
-          <span className="material-symbols-outlined text-brand-ocean-blue text-4xl">
-            savings
-          </span>
+    <div className="mt-8 hidden grid-cols-1 gap-12 text-center md:grid md:grid-cols-3">
+      {whyChooseUs.map((item) => (
+        <div key={item.title} className="flex flex-col items-center bg-white p-8 rounded-xl shadow-soft hover:shadow-lg transition-shadow">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-ocean-blue/10 mb-4">
+            <span className="material-symbols-outlined text-brand-ocean-blue text-4xl">{item.icon}</span>
+          </div>
+          <h3 className="text-xl font-semibold text-gray-900">{item.title}</h3>
+          <p className="mt-2 text-gray-600">{item.body}</p>
         </div>
-        <h3 className="text-xl font-semibold text-gray-900">
-          Affordable
-        </h3>
-        <p className="mt-2 text-gray-600">
-          Delivering{" "}
-          <span className="text-brand-ocean-blue font-medium">
-            high-quality results
-          </span>{" "}
-          without compromising your budget is our core commitment.
-        </p>
-      </div>
-
-      {/* Card 3 */}
-      <div className="flex flex-col items-center bg-white p-8 rounded-xl shadow-soft hover:shadow-lg transition-shadow">
-        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-ocean-blue/10 mb-4">
-          <span className="material-symbols-outlined text-brand-ocean-blue text-4xl">
-            lightbulb
-          </span>
-        </div>
-        <h3 className="text-xl font-semibold text-gray-900">
-          Innovation
-        </h3>
-        <p className="mt-2 text-gray-600">
-          We leverage the latest trends and technologies to build{" "}
-          <span className="text-brand-ocean-blue font-medium">
-            innovative and future-proof
-          </span>{" "}
-          interiors.
-        </p>
-      </div>
-
+      ))}
     </div>
   </div>
 </section>
@@ -394,10 +362,63 @@ export default function Home() {
 </section>
           </div>
           </main>
-
-          {/* FOOTER */}
-          
         </div>
+      </div>
+    </div>
+  );
+}
+
+function MobileCarousel({ items, renderItem }) {
+  const trackRef = useRef(null);
+  const [active, setActive] = useState(0);
+
+  useEffect(() => {
+    setActive(0);
+  }, [items.length]);
+
+  function handleScroll() {
+    if (!trackRef.current) return;
+    const cardWidth = trackRef.current.clientWidth;
+    const next = Math.round(trackRef.current.scrollLeft / Math.max(cardWidth, 1));
+    setActive(next);
+  }
+
+  function goTo(index) {
+    if (!trackRef.current) return;
+    trackRef.current.scrollTo({
+      left: index * trackRef.current.clientWidth,
+      behavior: "smooth",
+    });
+    setActive(index);
+  }
+
+  if (!items.length) return null;
+
+  return (
+    <div className="mt-8 md:hidden">
+      <div
+        ref={trackRef}
+        onScroll={handleScroll}
+        className="flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory no-scrollbar"
+      >
+        {items.map((item, index) => (
+          <div key={item.id || item.title || index} className="w-full shrink-0 snap-center">
+            {renderItem(item)}
+          </div>
+        ))}
+      </div>
+      <div className="mt-3 flex items-center justify-center gap-2">
+        {items.map((_, index) => (
+          <button
+            key={index}
+            type="button"
+            aria-label={`Go to slide ${index + 1}`}
+            onClick={() => goTo(index)}
+            className={`h-2.5 rounded-full transition-all ${
+              index === active ? "w-6 bg-brand-ocean-blue" : "w-2.5 bg-gray-300"
+            }`}
+          />
+        ))}
       </div>
     </div>
   );
