@@ -4,9 +4,15 @@ import { motion } from "framer-motion";
 import FaizPic from "../assets/mohammed_faiz_bio_pic.jpg";
 import KenzPic from "../assets/Muhammed_kenz_propic.jpeg";
 import { buttonMotion, cardMotion, sectionInView } from "../lib/motion";
+import { usePageImages } from "../hooks/usePageImages";
 
 export default function About() {
   const MotionLink = motion(Link);
+  const pageImages = usePageImages("about", {
+    heroImage: "",
+    whoWeAreImage:
+      "https://lh3.googleusercontent.com/aida-public/AB6AXuCVrJc7X1JjEuza4-3orPm4rkte8BFsmGWa2Xbk9WvLCqq9buFcXBp5LmKIBN262Kro47zy9WhSP97aAaSbJhqdj_8hZLch66s_PY4qLPq5vmUnkA5y0rA61lgfn0pzyr-MDjOsekvH0slZEDsI1SNBj-8Ndkfh55MCekru1_awX6JT9T61OuyDbBP6DOaVEwiCsNGvjcTOMgX7-RxmtPd4JXjGGCuOfqHeu0iR7muXP07fty4-medrmQEZD0pG3fc59E2E65D3pxd7",
+  });
   const teamMembers = [
     {
       name: "Ahmad Al-Fahim",
@@ -70,7 +76,17 @@ export default function About() {
 
               {/* HERO */}
               <section className="relative flex min-h-[250px] flex-col items-center justify-center overflow-hidden rounded-xl bg-white p-8 text-center shadow-soft md:min-h-[300px]">
-                <div className="absolute inset-0 zig-zag-pattern opacity-50" />
+                {pageImages.heroImage ? (
+                  <div
+                    className="absolute inset-0"
+                    style={{
+                      backgroundImage: `url(${pageImages.heroImage})`,
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
+                      opacity: 0.18,
+                    }}
+                  />
+                ) : null}
 
                 <div className="relative flex flex-col items-center gap-4 max-w-4xl">
                   <h1 className="text-4xl font-bold leading-tight tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
@@ -88,7 +104,7 @@ export default function About() {
                 <div className="w-full">
                   <img
                     className="aspect-[4/3] w-full rounded-xl object-cover shadow-soft"
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuCVrJc7X1JjEuza4-3orPm4rkte8BFsmGWa2Xbk9WvLCqq9buFcXBp5LmKIBN262Kro47zy9WhSP97aAaSbJhqdj_8hZLch66s_PY4qLPq5vmUnkA5y0rA61lgfn0pzyr-MDjOsekvH0slZEDsI1SNBj-8Ndkfh55MCekru1_awX6JT9T61OuyDbBP6DOaVEwiCsNGvjcTOMgX7-RxmtPd4JXjGGCuOfqHeu0iR7muXP07fty4-medrmQEZD0pG3fc59E2E65D3pxd7"
+                    src={pageImages.whoWeAreImage}
                     alt="Modern interior"
                   />
                 </div>

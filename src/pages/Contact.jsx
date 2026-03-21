@@ -1,7 +1,10 @@
 import React, { useState } from "react";
-import heroBg from "../assets/homepage_hero_bg.jpg";
+import { usePageImages } from "../hooks/usePageImages";
 
 export default function Contact() {
+  const pageImages = usePageImages("contact", {
+    heroImage: "",
+  });
   // -------------------------
   // FORM STATE
   // -------------------------
@@ -159,16 +162,18 @@ export default function Contact() {
             <div className="flex flex-col gap-16">
               
               {/* ---------------- HERO SECTION ---------------- */}
-              <section className="relative flex min-h-[260px] flex-col items-center justify-center overflow-hidden rounded-xl bg-white p-8 text-center shadow-soft md:min-h-[320px]">
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    backgroundImage: `url(${heroBg})`,
-                    backgroundSize: "cover",
-                    backgroundPosition: "center",
-                    opacity: 0.25,
-                  }}
-                />
+              <section className="relative flex min-h-[260px] flex-col items-center justify-center overflow-hidden rounded-xl bg-white/85 backdrop-blur-sm p-8 text-center shadow-soft md:min-h-[320px]">
+                {pageImages.heroImage ? (
+                  <div
+                    className="absolute inset-0"
+                    style={{
+                      backgroundImage: `url(${pageImages.heroImage})`,
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
+                      opacity: 0.22,
+                    }}
+                  />
+                ) : null}
                 <div className="relative z-10">
                   <h1 className="text-4xl font-bold leading-tight text-gray-900 sm:text-5xl lg:text-6xl">
                     Contact Us

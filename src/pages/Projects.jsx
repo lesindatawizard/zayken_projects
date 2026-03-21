@@ -4,9 +4,13 @@ import { motion } from "framer-motion";
 import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "../firebase";
 import { buttonMotion, cardMotion, sectionInView } from "../lib/motion";
+import { usePageImages } from "../hooks/usePageImages";
 
 export default function Projects() {
   const MotionLink = motion(Link);
+  const pageImages = usePageImages("projects", {
+    heroImage: "",
+  });
   const [projects, setProjects] = useState([]);
   const [categories, setCategories] = useState(["All"]);
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -74,15 +78,24 @@ export default function Projects() {
           {/* PAGE TITLE */}
           <section
             className="rounded-xl shadow-soft max-w-6xl mx-auto h-[300px] flex items-center justify-center 
-                      text-center text-white bg-cover bg-center"
-            style={{
-              backgroundImage:
-                "linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.5)), url('https://lh3.googleusercontent.com/aida-public/AB6AXuBxHG0_PcRn7TFAnDKbftTBYVmejt202QNv_TLyBEsYfMgv68Wsut3QHMuWJvMUjaqCQyvQuaue370oB8gkuoaMC1cgiHuxQecNojg6HaDD1bh_-3dWIISIwgTyoUToRwG1GCc7WbHBf-sgj4EAKm51qqyFsJ-45RvdJ2qtO78C_XEaEgZMh_KEJM1nkBoIqvU35kbGU-FeCz-dr5hSH39FteAwIvjURkKAQEiDBrgKOZBQsHFOjD2fFK9iT36h2gb95Ib2IvEeGt-b')",
-            }}
+                      text-center text-gray-900 bg-white/85 backdrop-blur-sm relative overflow-hidden"
           >
+            {pageImages.heroImage ? (
+              <div
+                className="absolute inset-0"
+                style={{
+                  backgroundImage: `url(${pageImages.heroImage})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  opacity: 0.22,
+                }}
+              />
+            ) : null}
+            <div className="relative z-10">
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold">
   Our Projects
 </h1>
+            </div>
           </section>
 
 {/* CATEGORY FILTERS */}
