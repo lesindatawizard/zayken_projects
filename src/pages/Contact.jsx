@@ -154,7 +154,6 @@ export default function Contact() {
           backgroundRepeat: "no-repeat",
           backgroundPosition: "top center",
           backgroundSize: "cover",
-          backgroundAttachment: "fixed",
         }}
       >
         <div className="flex h-full grow flex-col w-full backdrop-blur-effect">
