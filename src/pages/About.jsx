@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import FaizPic from "../assets/mohammed_faiz_bio_pic.jpg";
 import KenzPic from "../assets/Muhammed_kenz_propic.jpeg";
+import { buttonMotion, cardMotion, sectionInView } from "../lib/motion";
 
 export default function About() {
+  const MotionLink = motion(Link);
   const teamMembers = [
     {
       name: "Ahmad Al-Fahim",
@@ -107,7 +110,13 @@ export default function About() {
               </section>
 
               {/* MISSION */}
-              <section className="flex flex-col items-center gap-8 text-center">
+              <motion.section
+                className="flex flex-col items-center gap-8 text-center"
+                initial={sectionInView.initial}
+                whileInView={sectionInView.whileInView}
+                viewport={sectionInView.viewport}
+                transition={sectionInView.transition}
+              >
                 <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
                   Our Mission
                 </h2>
@@ -131,10 +140,16 @@ export default function About() {
                   <span className="font-semibold text-brand-ocean-blue">sustainable</span> 
                   interior solutions that are both beautiful and budget-friendly.
                 </p>
-              </section>
+              </motion.section>
 
               {/* TEAM */}
-              <section className="flex flex-col items-center gap-8 text-center">
+              <motion.section
+                className="flex flex-col items-center gap-8 text-center"
+                initial={sectionInView.initial}
+                whileInView={sectionInView.whileInView}
+                viewport={sectionInView.viewport}
+                transition={sectionInView.transition}
+              >
                 <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
                   Our Team
                 </h2>
@@ -142,7 +157,12 @@ export default function About() {
                 <MobileCarousel
                   items={teamMembers}
                   renderItem={(member) => (
-                    <div className="flex flex-col items-center gap-4 rounded-xl bg-white p-6 shadow-soft min-h-[290px] justify-center">
+                    <motion.div
+                      className="flex flex-col items-center gap-4 rounded-xl bg-white p-6 shadow-soft min-h-[290px] justify-center"
+                      whileHover={cardMotion.whileHover}
+                      whileTap={cardMotion.whileTap}
+                      transition={cardMotion.transition}
+                    >
                       <img
                         className="h-28 w-28 rounded-full object-cover object-top shadow-lg"
                         src={member.image}
@@ -150,7 +170,7 @@ export default function About() {
                       />
                       <h3 className="text-lg font-semibold text-gray-900">{member.name}</h3>
                       <p className="text-sm font-medium text-brand-ocean-blue">{member.role}</p>
-                    </div>
+                    </motion.div>
                   )}
                 />
 
@@ -191,10 +211,16 @@ export default function About() {
                     </p>
                   </div>
                 </div>
-              </section>
+              </motion.section>
 
               {/* WHY CLIENTS TRUST US */}
-              <section className="flex flex-col items-center gap-8 text-center">
+              <motion.section
+                className="flex flex-col items-center gap-8 text-center"
+                initial={sectionInView.initial}
+                whileInView={sectionInView.whileInView}
+                viewport={sectionInView.viewport}
+                transition={sectionInView.transition}
+              >
                 <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
                   Why Clients Trust Us
                 </h2>
@@ -202,13 +228,18 @@ export default function About() {
                 <MobileCarousel
                   items={trustCards}
                   renderItem={(card) => (
-                    <div className="flex flex-col items-center gap-4 rounded-xl bg-white p-6 shadow-soft min-h-[280px] justify-center">
+                    <motion.div
+                      className="flex flex-col items-center gap-4 rounded-xl bg-white p-6 shadow-soft min-h-[280px] justify-center"
+                      whileHover={cardMotion.whileHover}
+                      whileTap={cardMotion.whileTap}
+                      transition={cardMotion.transition}
+                    >
                       <div className="flex h-14 w-14 items-center justify-center rounded-full bg-brand-ocean-blue/10 text-brand-ocean-blue">
                         <span className="material-symbols-outlined text-3xl">{card.icon}</span>
                       </div>
                       <h3 className="text-lg font-semibold text-gray-900">{card.title}</h3>
                       <p className="text-sm text-gray-600">{card.description}</p>
-                    </div>
+                    </motion.div>
                   )}
                 />
 
@@ -255,7 +286,7 @@ export default function About() {
                   </div>
 
                 </div>
-              </section>
+              </motion.section>
 
               {/* CTA */}
               <section className="flex flex-col items-center gap-6 rounded-xl bg-white p-8 text-center shadow-soft md:p-12">
@@ -268,19 +299,25 @@ export default function About() {
                 </p>
 
                 <div className="mt-2 flex flex-wrap justify-center gap-4">
-                  <Link
+                  <MotionLink
                     to="/services"
                     className="flex min-w-[140px] cursor-pointer items-center justify-center rounded-lg h-12 px-6 bg-brand-ocean-blue text-white text-base font-bold shadow-soft transition-transform hover:scale-105"
+                    whileHover={buttonMotion.whileHover}
+                    whileTap={buttonMotion.whileTap}
+                    transition={buttonMotion.transition}
                   >
                     View Services
-                  </Link>
+                  </MotionLink>
   
-                  <Link
+                  <MotionLink
                     to="/contact"
                     className="flex min-w-[140px] cursor-pointer items-center justify-center rounded-lg h-12 px-6 bg-transparent text-brand-ocean-blue ring-2 ring-brand-ocean-blue transition-transform hover:scale-105 hover:bg-brand-ocean-blue/10"
+                    whileHover={buttonMotion.whileHover}
+                    whileTap={buttonMotion.whileTap}
+                    transition={buttonMotion.transition}
                   >
                     Contact Us
-                  </Link>
+                  </MotionLink>
                 </div>
               </section>
 
@@ -324,7 +361,12 @@ function MobileCarousel({ items, renderItem }) {
         className="flex gap-4 overflow-x-auto snap-x snap-mandatory no-scrollbar"
       >
         {items.map((item, index) => (
-          <div key={item.name || item.title || index} className="w-full shrink-0 snap-center">
+          <div
+            key={item.name || item.title || index}
+            className={`w-full shrink-0 snap-center transition-transform duration-300 ${
+              active === index ? "scale-100" : "scale-[0.98]"
+            }`}
+          >
             {renderItem(item)}
           </div>
         ))}

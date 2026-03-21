@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import ZaykenLogo from "../assets/zayken_projects_logo.svg"; 
+import { sectionInView } from "../lib/motion";
 
 export default function Footer() {
   const facebookUrl = "https://facebook.com";
@@ -7,7 +9,13 @@ export default function Footer() {
   const linkedinUrl = "https://linkedin.com";
 
   return (
-    <footer className="text-dark-charcoal dark:text-white/70 py-6 mt-6 border-t border-gray-200 dark:border-white/20">
+    <motion.footer
+      className="text-dark-charcoal dark:text-white/70 py-6 mt-6 border-t border-gray-200 dark:border-white/20"
+      initial={sectionInView.initial}
+      whileInView={sectionInView.whileInView}
+      viewport={sectionInView.viewport}
+      transition={sectionInView.transition}
+    >
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
 
@@ -155,7 +163,7 @@ export default function Footer() {
           <p>© 2026 Zayken Projects. All Rights Reserved.</p>
         </div>
       </div>
-    </footer>
+    </motion.footer>
   );
 }
 

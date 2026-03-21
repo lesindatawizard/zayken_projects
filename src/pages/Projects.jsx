@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "../firebase";
+import { buttonMotion, cardMotion, sectionInView } from "../lib/motion";
 
 export default function Projects() {
+  const MotionLink = motion(Link);
   const [projects, setProjects] = useState([]);
   const [categories, setCategories] = useState(["All"]);
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -103,6 +106,12 @@ export default function Projects() {
 </div>
 
           {/* PROJECT GRID */}
+          <motion.div
+            initial={sectionInView.initial}
+            whileInView={sectionInView.whileInView}
+            viewport={sectionInView.viewport}
+            transition={sectionInView.transition}
+          >
           <ProjectsMobileCarousel projects={filteredProjects} />
           <div className="hidden sm:grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-6xl mx-auto mt-8 px-4">
             {filteredProjects.length === 0 ? (
@@ -111,7 +120,13 @@ export default function Projects() {
               </p>
             ) : (
               filteredProjects.map((project) => (
-                <div key={project.id} className="group relative rounded-xl shadow-lg overflow-hidden bg-white">
+                <motion.div
+                  key={project.id}
+                  className="group relative rounded-xl shadow-lg overflow-hidden bg-white"
+                  whileHover={cardMotion.whileHover}
+                  whileTap={cardMotion.whileTap}
+                  transition={cardMotion.transition}
+                >
                   {project.imageUrl ? (
                     <img
                       src={project.imageUrl}
@@ -129,13 +144,20 @@ export default function Projects() {
                       <p className="text-gray-700 text-sm mt-0.5">{project.category || ""}</p>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               ))
             )}
           </div>
+          </motion.div>
 
 {/* CTA */}
-<section className="flex flex-col items-center gap-6 rounded-xl bg-white p-8 text-center shadow-soft md:p-12 mt-20">
+<motion.section
+  className="flex flex-col items-center gap-6 rounded-xl bg-white p-8 text-center shadow-soft md:p-12 mt-20"
+  initial={sectionInView.initial}
+  whileInView={sectionInView.whileInView}
+  viewport={sectionInView.viewport}
+  transition={sectionInView.transition}
+>
   <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">
     Ready to Start Your Project?
   </h2>
@@ -145,21 +167,27 @@ export default function Projects() {
   </p>
 
   <div className="mt-2 flex flex-wrap justify-center gap-4">
-    <Link
+    <MotionLink
       to="/services"
       className="flex min-w-[140px] cursor-pointer items-center justify-center rounded-lg h-12 px-6 bg-brand-ocean-blue text-white text-base font-bold shadow-soft transition-transform hover:scale-105"
+      whileHover={buttonMotion.whileHover}
+      whileTap={buttonMotion.whileTap}
+      transition={buttonMotion.transition}
     >
       View Services
-    </Link>
+    </MotionLink>
 
-    <Link
+    <MotionLink
       to="/contact"
       className="flex min-w-[140px] cursor-pointer items-center justify-center rounded-lg h-12 px-6 bg-transparent text-brand-ocean-blue ring-2 ring-brand-ocean-blue transition-transform hover:scale-105 hover:bg-brand-ocean-blue/10"
+      whileHover={buttonMotion.whileHover}
+      whileTap={buttonMotion.whileTap}
+      transition={buttonMotion.transition}
     >
       Contact Us
-    </Link>
+    </MotionLink>
   </div>
-</section>
+</motion.section>
 
             </main>
         </div>
@@ -204,9 +232,18 @@ function ProjectsMobileCarousel({ projects }) {
             onScroll={handleScroll}
             className="flex gap-4 overflow-x-auto snap-x snap-mandatory no-scrollbar"
           >
-            {projects.map((project) => (
-              <div key={project.id} className="w-full shrink-0 snap-center">
-                <div className="relative rounded-xl shadow-lg overflow-hidden bg-white">
+            {projects.map((project, index) => (
+              <div
+                key={project.id}
+                className={`w-full shrink-0 snap-center transition-transform duration-300 ${
+                  active === index ? "scale-100" : "scale-[0.98]"
+                }`}
+              >
+                <motion.div
+                  className="relative rounded-xl shadow-lg overflow-hidden bg-white"
+                  whileTap={cardMotion.whileTap}
+                  transition={cardMotion.transition}
+                >
                   {project.imageUrl ? (
                     <img
                       src={project.imageUrl}
@@ -222,7 +259,7 @@ function ProjectsMobileCarousel({ projects }) {
                     <p className="text-gray-900 font-semibold">{project.title || "Untitled"}</p>
                     <p className="text-gray-700 text-sm mt-0.5">{project.category || ""}</p>
                   </div>
-                </div>
+                </motion.div>
               </div>
             ))}
           </div>

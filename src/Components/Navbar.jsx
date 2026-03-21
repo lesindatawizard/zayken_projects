@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
 import zaykenLogo from "../assets/zayken_projects_logo.svg";
 import { usePopup } from "../context/PopupContext";
+import { buttonMotion } from "../lib/motion";
 
 export default function Navbar() {
   const { openQuote } = usePopup();
@@ -80,13 +82,16 @@ export default function Navbar() {
       </nav>
 
       <div className="flex items-center">
-        <button
+        <motion.button
           onClick={openQuote}
           className="hidden md:flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden 
             rounded-lg h-10 px-5 bg-brand-ocean-blue text-white text-sm font-bold shadow-soft transition-transform hover:scale-105"
+          whileHover={buttonMotion.whileHover}
+          whileTap={buttonMotion.whileTap}
+          transition={buttonMotion.transition}
         >
           <span className="truncate">Get a Quote</span>
-        </button>
+        </motion.button>
 
         <button
           onClick={() => setIsMobileMenuOpen((prev) => !prev)}
@@ -98,12 +103,25 @@ export default function Navbar() {
         </button>
       </div>
     </header>
-    {isMobileMenuOpen && <div className="fixed inset-0 z-40 bg-black/30 md:hidden" />}
-    <aside
+    <AnimatePresence>
+    {isMobileMenuOpen && (
+      <motion.div
+        className="fixed inset-0 z-40 bg-black/30 md:hidden"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+      />
+    )}
+    </AnimatePresence>
+    <AnimatePresence>
+    {isMobileMenuOpen && (
+    <motion.aside
       ref={panelRef}
-      className={`fixed top-0 right-0 z-50 h-full w-[78%] max-w-xs bg-white shadow-2xl p-6 transition-transform duration-300 md:hidden ${
-        isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
-      }`}
+      className="fixed top-0 right-0 z-50 h-full w-[78%] max-w-xs bg-white shadow-2xl p-6 md:hidden"
+      initial={{ x: "100%" }}
+      animate={{ x: 0 }}
+      exit={{ x: "100%" }}
+      transition={{ duration: 0.28, ease: "easeOut" }}
     >
       <div className="mb-4 flex items-center justify-between">
         <h3 className="text-lg font-bold text-gray-900">Menu</h3>
@@ -117,13 +135,32 @@ export default function Navbar() {
         </button>
       </div>
 
-      <nav className="flex flex-col gap-4 text-base font-medium text-gray-800">
-        <Link to="/" className="hover:text-brand-ocean-blue">Home</Link>
-        <Link to="/about" className="hover:text-brand-ocean-blue">About Us</Link>
-        <Link to="/services" className="hover:text-brand-ocean-blue">Services</Link>
-        <Link to="/projects" className="hover:text-brand-ocean-blue">Projects</Link>
-        <Link to="/contact" className="hover:text-brand-ocean-blue">Contact</Link>
-      </nav>
+      <motion.nav
+        className="flex flex-col gap-4 text-base font-medium text-gray-800"
+        initial="hidden"
+        animate="show"
+        variants={{
+          hidden: {},
+          show: { transition: { staggerChildren: 0.06 } },
+        }}
+      >
+        {[
+          { to: "/", label: "Home" },
+          { to: "/about", label: "About Us" },
+          { to: "/services", label: "Services" },
+          { to: "/projects", label: "Projects" },
+          { to: "/contact", label: "Contact" },
+        ].map((item) => (
+          <motion.div
+            key={item.to}
+            variants={{ hidden: { opacity: 0, x: 12 }, show: { opacity: 1, x: 0 } }}
+          >
+            <Link to={item.to} className="hover:text-brand-ocean-blue">
+              {item.label}
+            </Link>
+          </motion.div>
+        ))}
+      </motion.nav>
 
       <button
         type="button"
@@ -135,7 +172,9 @@ export default function Navbar() {
       >
         Get a Quote
       </button>
-    </aside>
+    </motion.aside>
+    )}
+    </AnimatePresence>
     </>
   );
 }
