@@ -1,7 +1,10 @@
 import heroBg from "../assets/homepage_hero_bg.jpg";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
+import { buttonMotion, cardMotion, sectionInView } from "../lib/motion";
 
 export default function Services() {
+  const MotionLink = motion(Link);
   return (
     <div className="font-display text-gray-800">
       <div
@@ -21,7 +24,13 @@ export default function Services() {
           <main className="w-full max-w-7xl mx-auto flex-1 px-4 py-10 md:px-6 md:py-14">
 
             {/* HERO */}
-            <section className="relative flex min-h-[280px] flex-col items-center justify-center overflow-hidden rounded-xl bg-white p-8 text-center shadow-soft md:min-h-[340px]">
+            <motion.section
+              className="relative flex min-h-[280px] flex-col items-center justify-center overflow-hidden rounded-xl bg-white p-8 text-center shadow-soft md:min-h-[340px]"
+              initial={sectionInView.initial}
+              whileInView={sectionInView.whileInView}
+              viewport={sectionInView.viewport}
+              transition={sectionInView.transition}
+            >
               <div
                 className="absolute inset-0"
                 style={{
@@ -39,10 +48,16 @@ export default function Services() {
                   Delivering excellence in interior fit-out and construction with tailored solutions.
                 </p>
               </div>
-            </section>
+            </motion.section>
 
 {/* SERVICES GRID */}
-<section className="mt-16">
+<motion.section
+  className="mt-16"
+  initial={sectionInView.initial}
+  whileInView={sectionInView.whileInView}
+  viewport={sectionInView.viewport}
+  transition={sectionInView.transition}
+>
   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
 
     {[
@@ -61,29 +76,35 @@ export default function Services() {
       { icon: "weekend", text: "Furniture & Upholstery" },
       { icon: "grid_view", text: "Glass & SS Works" },
     ].map((item, index) => (
-      <div
+      <motion.div
         key={index}
         className="group flex flex-col gap-4 rounded-lg bg-white p-6 shadow-soft hover:shadow-lg hover:-translate-y-1 transition-all border border-gray-200 relative overflow-hidden"
+        whileHover={cardMotion.whileHover}
+        whileTap={cardMotion.whileTap}
+        transition={cardMotion.transition}
       >
         <div className="absolute top-0 left-0 h-1.5 w-full bg-brand-ocean-blue scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
         <span className="material-symbols-outlined text-brand-ocean-blue !text-4xl">
           {item.icon}
         </span>
         <h3 className="text-lg font-bold text-gray-900">{item.text}</h3>
-      </div>
+      </motion.div>
     ))}
 
   </div>
 
   <div className="flex justify-center mt-12">
-    <Link
+    <MotionLink
       to="/projects"
       className="flex items-center justify-center rounded-lg h-12 px-8 bg-brand-ocean-blue text-white text-base font-bold shadow-lg hover:scale-105 transition-transform"
+      whileHover={buttonMotion.whileHover}
+      whileTap={buttonMotion.whileTap}
+      transition={buttonMotion.transition}
     >
       View Projects
-    </Link>
+    </MotionLink>
   </div>
-</section>
+</motion.section>
 
 
             {/* CTA */}
@@ -96,12 +117,15 @@ export default function Services() {
                   Get in touch with us today to discuss your interior fit-out or construction project.
                 </p>
 
-                <Link
+                <MotionLink
                   to="/contact"
                   className="flex min-w-[140px] cursor-pointer items-center justify-center rounded-lg h-12 px-6 bg-brand-ocean-blue text-white font-bold shadow-soft transition-transform hover:scale-105"
+                  whileHover={buttonMotion.whileHover}
+                  whileTap={buttonMotion.whileTap}
+                  transition={buttonMotion.transition}
                 >
                   Contact Us
-                </Link>
+                </MotionLink>
               </div>
             </section>
 

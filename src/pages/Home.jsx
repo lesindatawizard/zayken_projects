@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import heroBg from "../assets/Heroimage_background.jpg";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../firebase";
 import { usePopup } from "../context/PopupContext";
+import { buttonMotion, cardMotion, sectionInView } from "../lib/motion";
 
 const services = [
   { icon: "design_services", title: "Turnkey Interior Fit-Out" },
@@ -33,6 +35,7 @@ const whyChooseUs = [
 ];
 
 export default function Home() {
+  const MotionLink = motion(Link);
   const { openQuote } = usePopup();
   const [featuredProjects, setFeaturedProjects] = useState([]);
   const [loadingFeatured, setLoadingFeatured] = useState(true);
@@ -70,8 +73,12 @@ export default function Home() {
           <main className="w-full max-w-7xl mx-auto flex-1 px-4 py-8 md:px-6 md:py-12 lg:py-16">
             <div className="flex flex-col gap-16 md:gap-20 lg:gap-24">
 {/* HERO */}
-<section
+<motion.section
   className="relative flex min-h-[280px] flex-col items-center justify-center overflow-hidden rounded-xl bg-white p-8 text-center shadow-soft md:min-h-[340px]"
+  initial={sectionInView.initial}
+  whileInView={sectionInView.whileInView}
+  viewport={sectionInView.viewport}
+  transition={sectionInView.transition}
 >
   {/* Background Image */}
   <div
@@ -86,34 +93,45 @@ export default function Home() {
 
   {/* Content */}
   <div className="relative flex flex-col items-center gap-4 max-w-4xl">
-    <h1 className="text-4xl font-bold leading-tight tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
+    <motion.h1
+      className="text-4xl font-bold leading-tight tracking-tight text-gray-900 sm:text-5xl lg:text-6xl"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+    >
       Creating{" "}
       <span className="text-brand-ocean-blue">Functional</span>,{" "}
       <span className="text-brand-ocean-blue">Sustainable</span> &amp;{" "}
       <span className="text-brand-ocean-blue">Beautiful</span> Spaces.
-    </h1>
+    </motion.h1>
 
     <h2 className="max-w-2xl text-lg font-normal text-gray-600 sm:text-xl">
       Interior Fit-Out &amp; Maintenance Company in Oman.
     </h2>
 
     <div className="mt-4 flex flex-wrap justify-center gap-4">
-      <Link
+      <MotionLink
         to="/projects"
         className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-brand-ocean-blue text-white text-base font-bold shadow-lg transition-transform hover:scale-105"
+        whileHover={buttonMotion.whileHover}
+        whileTap={buttonMotion.whileTap}
+        transition={buttonMotion.transition}
       >
         <span className="truncate">View Our Projects</span>
-      </Link>
+      </MotionLink>
 
-      <button
+      <motion.button
         onClick={openQuote}
         className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-white border-2 border-brand-sky-blue text-brand-ocean-blue text-base font-bold shadow-lg transition-transform hover:scale-105 hover:bg-brand-sky-blue/10"
+        whileHover={buttonMotion.whileHover}
+        whileTap={buttonMotion.whileTap}
+        transition={buttonMotion.transition}
       >
         <span className="truncate">Click for a free Quote</span>
-      </button>
+      </motion.button>
     </div>
   </div>
-</section>
+</motion.section>
 
            {/* ABOUT */}
 <section className="grid grid-cols-1 items-center gap-12 md:grid-cols-2 lg:gap-16">
@@ -157,7 +175,13 @@ export default function Home() {
 </section>
 
     {/* SERVICES */}
-<section className="pt-0 sm:pt-2 pb-10">
+<motion.section
+  className="pt-0 sm:pt-2 pb-10"
+  initial={sectionInView.initial}
+  whileInView={sectionInView.whileInView}
+  viewport={sectionInView.viewport}
+  transition={sectionInView.transition}
+>
   <div className="mx-auto max-w-7xl px-4 md:px-6 lg:px-8">
 
     {/* Title */}
@@ -174,22 +198,11 @@ export default function Home() {
     <MobileCarousel
       items={services}
       renderItem={(service) => (
-        <div className="group flex flex-col items-center justify-center text-center px-6 py-5 bg-white rounded-xl shadow-soft">
-          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-brand-ocean-blue/10">
-            <span className="material-symbols-outlined text-brand-ocean-blue text-3xl">
-              {service.icon}
-            </span>
-          </div>
-          <h3 className="mt-4 text-lg font-semibold text-gray-900">{service.title}</h3>
-        </div>
-      )}
-    />
-
-    <div className="mx-auto mt-10 hidden max-w-2xl grid-cols-1 gap-6 sm:grid md:grid-cols-2 lg:max-w-none lg:grid-cols-3">
-      {services.map((service) => (
-        <div
-          key={service.title}
-          className="group flex flex-col items-center text-center px-6 py-5 bg-white rounded-xl shadow-soft transition-all duration-300 hover:shadow-lg hover:ring-2 hover:ring-brand-ocean-blue/50"
+        <motion.div
+          className="group flex flex-col items-center justify-center text-center px-6 py-5 bg-white rounded-xl shadow-soft"
+          whileHover={cardMotion.whileHover}
+          whileTap={cardMotion.whileTap}
+          transition={cardMotion.transition}
         >
           <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-brand-ocean-blue/10">
             <span className="material-symbols-outlined text-brand-ocean-blue text-3xl">
@@ -197,11 +210,30 @@ export default function Home() {
             </span>
           </div>
           <h3 className="mt-4 text-lg font-semibold text-gray-900">{service.title}</h3>
-        </div>
+        </motion.div>
+      )}
+    />
+
+    <div className="mx-auto mt-10 hidden max-w-2xl grid-cols-1 gap-6 sm:grid md:grid-cols-2 lg:max-w-none lg:grid-cols-3">
+      {services.map((service) => (
+        <motion.div
+          key={service.title}
+          className="group flex flex-col items-center text-center px-6 py-5 bg-white rounded-xl shadow-soft transition-all duration-300 hover:shadow-lg hover:ring-2 hover:ring-brand-ocean-blue/50"
+          whileHover={cardMotion.whileHover}
+          whileTap={cardMotion.whileTap}
+          transition={cardMotion.transition}
+        >
+          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-brand-ocean-blue/10">
+            <span className="material-symbols-outlined text-brand-ocean-blue text-3xl">
+              {service.icon}
+            </span>
+          </div>
+          <h3 className="mt-4 text-lg font-semibold text-gray-900">{service.title}</h3>
+        </motion.div>
       ))}
     </div>
   </div>
-</section>
+</motion.section>
 
 {/* INDUSTRIES */}
 <section className="-mt-10 pb-8">
@@ -227,7 +259,13 @@ export default function Home() {
 </section>
 
             {/* FEATURED PROJECTS */}
-            <section className="-mt-16 py-8">
+            <motion.section
+              className="-mt-16 py-8"
+              initial={sectionInView.initial}
+              whileInView={sectionInView.whileInView}
+              viewport={sectionInView.viewport}
+              transition={sectionInView.transition}
+            >
               <div className="mx-auto max-w-7xl px-6 lg:px-8">
                 <div className="mx-auto max-w-2xl lg:text-center">
                   <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
@@ -246,7 +284,11 @@ export default function Home() {
                     <MobileCarousel
                       items={featuredProjects}
                       renderItem={(project) => (
-                        <div className="overflow-hidden rounded-xl shadow-lg relative bg-white">
+                        <motion.div
+                          className="overflow-hidden rounded-xl shadow-lg relative bg-white"
+                          whileTap={cardMotion.whileTap}
+                          transition={cardMotion.transition}
+                        >
                           {project.imageUrl ? (
                             <img
                               alt={project.title || "Featured project"}
@@ -262,13 +304,19 @@ export default function Home() {
                             <p className="text-gray-900 font-semibold">{project.title || "Untitled"}</p>
                             <p className="text-gray-700 text-sm mt-0.5">{project.category || ""}</p>
                           </div>
-                        </div>
+                        </motion.div>
                       )}
                     />
 
                     <div className="mx-auto mt-8 hidden max-w-2xl grid-cols-1 gap-8 sm:grid-cols-2 lg:grid lg:max-w-none lg:grid-cols-3">
                       {featuredProjects.map((project) => (
-                        <div key={project.id} className="group overflow-hidden rounded-xl shadow-lg relative bg-white">
+                        <motion.div
+                          key={project.id}
+                          className="group overflow-hidden rounded-xl shadow-lg relative bg-white"
+                          whileHover={cardMotion.whileHover}
+                          whileTap={cardMotion.whileTap}
+                          transition={cardMotion.transition}
+                        >
                           {project.imageUrl ? (
                             <img
                               alt={project.title || "Featured project"}
@@ -286,7 +334,7 @@ export default function Home() {
                               <p className="text-gray-700 text-sm mt-0.5">{project.category || ""}</p>
                             </div>
                           </div>
-                        </div>
+                        </motion.div>
                       ))}
                     </div>
                   </>
@@ -301,10 +349,16 @@ export default function Home() {
                   </Link>
                 </div>
               </div>
-            </section>
+            </motion.section>
 
            {/* WHY CHOOSE US */}
-<section className="-mt-16 py-8">
+<motion.section
+  className="-mt-16 py-8"
+  initial={sectionInView.initial}
+  whileInView={sectionInView.whileInView}
+  viewport={sectionInView.viewport}
+  transition={sectionInView.transition}
+>
   <div className="mx-auto max-w-7xl px-6 lg:px-8">
     
     {/* Title */}
@@ -317,32 +371,49 @@ export default function Home() {
     <MobileCarousel
       items={whyChooseUs}
       renderItem={(item) => (
-        <div className="flex flex-col items-center bg-white p-8 rounded-xl shadow-soft text-center">
+        <motion.div
+          className="flex flex-col items-center bg-white p-8 rounded-xl shadow-soft text-center"
+          whileHover={cardMotion.whileHover}
+          whileTap={cardMotion.whileTap}
+          transition={cardMotion.transition}
+        >
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-ocean-blue/10 mb-4">
             <span className="material-symbols-outlined text-brand-ocean-blue text-4xl">{item.icon}</span>
           </div>
           <h3 className="text-xl font-semibold text-gray-900">{item.title}</h3>
           <p className="mt-2 text-gray-600">{item.body}</p>
-        </div>
+        </motion.div>
       )}
     />
 
     <div className="mt-8 hidden grid-cols-1 gap-12 text-center md:grid md:grid-cols-3">
       {whyChooseUs.map((item) => (
-        <div key={item.title} className="flex flex-col items-center bg-white p-8 rounded-xl shadow-soft hover:shadow-lg transition-shadow">
+        <motion.div
+          key={item.title}
+          className="flex flex-col items-center bg-white p-8 rounded-xl shadow-soft hover:shadow-lg transition-shadow"
+          whileHover={cardMotion.whileHover}
+          whileTap={cardMotion.whileTap}
+          transition={cardMotion.transition}
+        >
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-ocean-blue/10 mb-4">
             <span className="material-symbols-outlined text-brand-ocean-blue text-4xl">{item.icon}</span>
           </div>
           <h3 className="text-xl font-semibold text-gray-900">{item.title}</h3>
           <p className="mt-2 text-gray-600">{item.body}</p>
-        </div>
+        </motion.div>
       ))}
     </div>
   </div>
-</section>
+</motion.section>
 
 {/* CTA - Wider */}
-<section className="-mt-6 py-0">
+<motion.section
+  className="-mt-6 py-0"
+  initial={sectionInView.initial}
+  whileInView={sectionInView.whileInView}
+  viewport={sectionInView.viewport}
+  transition={sectionInView.transition}
+>
   <div className="flex flex-col items-center gap-6 rounded-xl bg-white p-8 text-center shadow-soft md:p-12 max-w-7xl w-full mx-auto">
     <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">
       Let’s start creating the space of your dreams.
@@ -353,15 +424,18 @@ export default function Home() {
     </p>
 
     <div className="mt-2 flex flex-wrap justify-center gap-4">
-      <Link
+      <MotionLink
         to="/contact"
         className="flex min-w-[140px] cursor-pointer items-center justify-center rounded-lg h-12 px-6 bg-brand-ocean-blue text-white font-bold shadow-soft transition-transform hover:scale-105"
+        whileHover={buttonMotion.whileHover}
+        whileTap={buttonMotion.whileTap}
+        transition={buttonMotion.transition}
       >
         Contact Us
-      </Link>
+      </MotionLink>
     </div>
   </div>
-</section>
+</motion.section>
           </div>
           </main>
         </div>
@@ -404,7 +478,12 @@ function MobileCarousel({ items, renderItem }) {
         className="flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory no-scrollbar"
       >
         {items.map((item, index) => (
-          <div key={item.id || item.title || index} className="w-full shrink-0 snap-center">
+          <div
+            key={item.id || item.title || index}
+            className={`w-full shrink-0 snap-center transition-transform duration-300 ${
+              active === index ? "scale-100" : "scale-[0.98]"
+            }`}
+          >
             {renderItem(item)}
           </div>
         ))}

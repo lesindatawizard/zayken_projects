@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
 
 // Global Components
 import Navbar from "./Components/Navbar";
@@ -23,6 +24,20 @@ import AdminSettings from "./admin/AdminSettings";
 
 // Context
 import { PopupProvider } from "./context/PopupContext";
+import { pageTransition } from "./lib/motion";
+
+function PageTransition({ children }) {
+  return (
+    <motion.div
+      initial={pageTransition.initial}
+      animate={pageTransition.animate}
+      exit={pageTransition.exit}
+      transition={pageTransition.transition}
+    >
+      {children}
+    </motion.div>
+  );
+}
 
 function AppContent() {
   const location = useLocation();
@@ -35,41 +50,47 @@ function AppContent() {
     <>
       {showShell && <Navbar />}
 
-      <Routes>
+      <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
         {/* Public */}
-        <Route path="/" element={<Home />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/projects" element={<Projects />} />
-        <Route path="/services" element={<Services />} />
-        <Route path="/contact" element={<Contact />} />
+        <Route path="/" element={<PageTransition><Home /></PageTransition>} />
+        <Route path="/about" element={<PageTransition><About /></PageTransition>} />
+        <Route path="/projects" element={<PageTransition><Projects /></PageTransition>} />
+        <Route path="/services" element={<PageTransition><Services /></PageTransition>} />
+        <Route path="/contact" element={<PageTransition><Contact /></PageTransition>} />
 
         {/* Admin */}
         <Route path="/admin" element={<Navigate to="/admin/login" replace />} />
-        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/admin/login" element={<PageTransition><AdminLogin /></PageTransition>} />
         <Route
           path="/admin/projects"
           element={
-            <RequireAdmin>
-              <AdminLayout>
-                <AdminProjects />
-              </AdminLayout>
-            </RequireAdmin>
+            <PageTransition>
+              <RequireAdmin>
+                <AdminLayout>
+                  <AdminProjects />
+                </AdminLayout>
+              </RequireAdmin>
+            </PageTransition>
           }
         />
         <Route
           path="/admin/settings"
           element={
-            <RequireAdmin>
-              <AdminLayout>
-                <AdminSettings />
-              </AdminLayout>
-            </RequireAdmin>
+            <PageTransition>
+              <RequireAdmin>
+                <AdminLayout>
+                  <AdminSettings />
+                </AdminLayout>
+              </RequireAdmin>
+            </PageTransition>
           }
         />
 
         {/* 404 */}
-        <Route path="*" element={<NotFound />} />
+        <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
       </Routes>
+      </AnimatePresence>
 
       {showShell && <Footer />}
       <QuotePopup />

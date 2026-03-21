@@ -1,5 +1,6 @@
 import { usePopup } from "../context/PopupContext";
 import { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 
 export default function QuotePopup() {
   const {
@@ -273,9 +274,21 @@ export default function QuotePopup() {
   return (
     <>
       {/* SUBMITTING / SUCCESS / ERROR MODAL */}
+      <AnimatePresence>
       {quoteStatus.open && (
-        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50 px-4">
-          <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-2xl text-center">
+        <motion.div
+          className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50 px-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          <motion.div
+            className="w-full max-w-sm rounded-xl bg-white p-6 shadow-2xl text-center"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.96 }}
+            transition={{ duration: 0.22, ease: "easeOut" }}
+          >
             {/* Icon */}
             <div className="mb-4 flex justify-center">
               {quoteStatus.phase === "loading" && (
@@ -330,18 +343,37 @@ export default function QuotePopup() {
                 Close
               </button>
             )}
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
+      </AnimatePresence>
 
       {/* QUOTE FORM MODAL */}
+      <AnimatePresence>
       {isQuoteOpen && (
-        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
+        <motion.div
+          className="fixed inset-0 z-[999] flex items-center justify-center p-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
       {/* Overlay */}
-      <div className="absolute inset-0 bg-black/50" onClick={closeQuote} />
+      <motion.div
+        className="absolute inset-0 bg-black/50"
+        onClick={closeQuote}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+      />
 
       {/* Popup */}
-      <div className="relative w-full max-w-3xl bg-white rounded-xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+      <motion.div
+        className="relative w-full max-w-3xl bg-white rounded-xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
+        initial={{ opacity: 0, scale: 0.9, y: 16 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.96, y: 10 }}
+        transition={{ duration: 0.22, ease: "easeOut" }}
+      >
 
         {/* Header */}
         <div className="flex items-center justify-between border-b border-gray-300 p-6 bg-white">
@@ -829,9 +861,10 @@ export default function QuotePopup() {
         </div>
 
       </form>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
       )}
+      </AnimatePresence>
   </>
 );
 }
