@@ -111,12 +111,19 @@ export default function Projects() {
               </p>
             ) : (
               filteredProjects.map((project) => (
-                <div
-                  key={project.id}
-                  className="group relative rounded-lg shadow-soft overflow-hidden bg-cover bg-center aspect-[3/4]"
-                  style={{ backgroundImage: `url(${project.imageUrl})` }}
-                >
-                  <div className="absolute inset-x-0 bottom-0 h-0 group-hover:h-[30%] bg-white/80 transition-all duration-300 ease-out flex items-end justify-center overflow-hidden">
+                <div key={project.id} className="group relative rounded-xl shadow-lg overflow-hidden bg-white">
+                  {project.imageUrl ? (
+                    <img
+                      src={project.imageUrl}
+                      alt={project.title || "Project image"}
+                      className="h-80 w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="h-80 w-full bg-gray-100 flex items-center justify-center text-gray-500">
+                      No image
+                    </div>
+                  )}
+                  <div className="absolute inset-x-0 bottom-0 h-0 group-hover:h-[30%] bg-white/85 transition-all duration-300 ease-out flex items-end justify-center overflow-hidden">
                     <div className="p-4 w-full text-center translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out">
                       <p className="text-gray-900 font-semibold">{project.title || "Untitled"}</p>
                       <p className="text-gray-700 text-sm mt-0.5">{project.category || ""}</p>
@@ -199,10 +206,18 @@ function ProjectsMobileCarousel({ projects }) {
           >
             {projects.map((project) => (
               <div key={project.id} className="w-full shrink-0 snap-center">
-                <div
-                  className="relative rounded-lg shadow-soft overflow-hidden bg-cover bg-center aspect-[3/4]"
-                  style={{ backgroundImage: `url(${project.imageUrl})` }}
-                >
+                <div className="relative rounded-xl shadow-lg overflow-hidden bg-white">
+                  {project.imageUrl ? (
+                    <img
+                      src={project.imageUrl}
+                      alt={project.title || "Project image"}
+                      className="h-80 w-full object-cover"
+                    />
+                  ) : (
+                    <div className="h-80 w-full bg-gray-100 flex items-center justify-center text-gray-500">
+                      No image
+                    </div>
+                  )}
                   <div className="absolute inset-x-0 bottom-0 bg-white/85 p-3 text-center">
                     <p className="text-gray-900 font-semibold">{project.title || "Untitled"}</p>
                     <p className="text-gray-700 text-sm mt-0.5">{project.category || ""}</p>

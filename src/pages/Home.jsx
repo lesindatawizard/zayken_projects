@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import heroBg from "../assets/homepage_hero_bg.jpg";
+import heroBg from "../assets/Heroimage_background.jpg";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../firebase";
 import { usePopup } from "../context/PopupContext";
@@ -174,7 +174,7 @@ export default function Home() {
     <MobileCarousel
       items={services}
       renderItem={(service) => (
-        <div className="group flex h-52 flex-col items-center justify-center text-center p-8 bg-white rounded-xl shadow-soft">
+        <div className="group flex flex-col items-center justify-center text-center px-6 py-5 bg-white rounded-xl shadow-soft">
           <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-brand-ocean-blue/10">
             <span className="material-symbols-outlined text-brand-ocean-blue text-3xl">
               {service.icon}
@@ -189,7 +189,7 @@ export default function Home() {
       {services.map((service) => (
         <div
           key={service.title}
-          className="group flex min-h-[208px] flex-col items-center text-center p-8 bg-white rounded-xl shadow-soft transition-all duration-300 hover:shadow-lg hover:ring-2 hover:ring-brand-ocean-blue/50"
+          className="group flex flex-col items-center text-center px-6 py-5 bg-white rounded-xl shadow-soft transition-all duration-300 hover:shadow-lg hover:ring-2 hover:ring-brand-ocean-blue/50"
         >
           <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-brand-ocean-blue/10">
             <span className="material-symbols-outlined text-brand-ocean-blue text-3xl">
@@ -280,9 +280,11 @@ export default function Home() {
                               No image
                             </div>
                           )}
-                          <div className="p-4 w-full text-center">
-                            <p className="text-gray-900 font-semibold">{project.title || "Untitled"}</p>
-                            <p className="text-gray-700 text-sm mt-0.5">{project.category || ""}</p>
+                          <div className="absolute inset-x-0 bottom-0 h-0 overflow-hidden bg-white/85 transition-all duration-300 ease-out group-hover:h-[30%]">
+                            <div className="p-4 w-full text-center translate-y-full transition-transform duration-300 ease-out group-hover:translate-y-0">
+                              <p className="text-gray-900 font-semibold">{project.title || "Untitled"}</p>
+                              <p className="text-gray-700 text-sm mt-0.5">{project.category || ""}</p>
+                            </div>
                           </div>
                         </div>
                       ))}
@@ -315,7 +317,7 @@ export default function Home() {
     <MobileCarousel
       items={whyChooseUs}
       renderItem={(item) => (
-        <div className="flex min-h-[320px] flex-col items-center bg-white p-8 rounded-xl shadow-soft text-center">
+        <div className="flex flex-col items-center bg-white p-8 rounded-xl shadow-soft text-center">
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-ocean-blue/10 mb-4">
             <span className="material-symbols-outlined text-brand-ocean-blue text-4xl">{item.icon}</span>
           </div>
