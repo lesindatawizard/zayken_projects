@@ -1,7 +1,51 @@
+import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import FaizPic from "../assets/mohammed_faiz_bio_pic.jpg";
 import KenzPic from "../assets/Muhammed_kenz_propic.jpeg";
 
 export default function About() {
+  const teamMembers = [
+    {
+      name: "Ahmad Al-Fahim",
+      role: "Chairman",
+      image:
+        "https://lh3.googleusercontent.com/aida-public/AB6AXuDlonr2cA7wJdK1kwLWo39gvLyZK0A3QhelNtEuB5vyD4NxDCaGMLiVEOnGdX_C4Axv9_VafiBKjJut1v_2R9hJpCip3Vuk9GlQF6hLZjsou2fBlFySna9fffrw95wMqnXssgE5aqRVxV6_aPT2XKtUJooZFYrSdPqdiw7NLPyDeSEYDF1IBX5qvNaRRKtrbC8Dujhq83ELR7RDB5AOArzqjEEtLzaGP4w7C_BTVgp9Nw6OvAOmJqDl619Y16C8YGooVbMQknOrUm1_",
+    },
+    {
+      name: "Muhammed Kenz",
+      role: "General Manager",
+      image: KenzPic,
+    },
+    {
+      name: "Mohammed Faiz",
+      role: "Marketing & Operations",
+      image: FaizPic,
+    },
+  ];
+
+  const trustCards = [
+    {
+      icon: "timer",
+      title: "On-Time Delivery",
+      description: "We respect your time and guarantee project completion within schedule.",
+    },
+    {
+      icon: "account_balance_wallet",
+      title: "Budget-Friendly",
+      description: "Smart, transparent pricing without compromising quality.",
+    },
+    {
+      icon: "design_services",
+      title: "Personalized Design",
+      description: "Every space is unique - your design will be too.",
+    },
+    {
+      icon: "groups",
+      title: "Experienced Team",
+      description: "Years of expertise combined with modern innovation.",
+    },
+  ];
+
   return (
     <div className="font-display text-gray-800">
       <div
@@ -95,7 +139,22 @@ export default function About() {
                   Our Team
                 </h2>
 
-                <div className="grid w-full grid-cols-1 gap-8 md:grid-cols-3">
+                <MobileCarousel
+                  items={teamMembers}
+                  renderItem={(member) => (
+                    <div className="flex flex-col items-center gap-4 rounded-xl bg-white p-6 shadow-soft min-h-[290px] justify-center">
+                      <img
+                        className="h-28 w-28 rounded-full object-cover object-top shadow-lg"
+                        src={member.image}
+                        alt={member.role}
+                      />
+                      <h3 className="text-lg font-semibold text-gray-900">{member.name}</h3>
+                      <p className="text-sm font-medium text-brand-ocean-blue">{member.role}</p>
+                    </div>
+                  )}
+                />
+
+                <div className="hidden w-full grid-cols-1 gap-8 md:grid md:grid-cols-3">
 
                   {/* 1 */}
                   <div className="flex flex-col items-center gap-4 rounded-xl bg-white p-6 shadow-soft">
@@ -140,7 +199,20 @@ export default function About() {
                   Why Clients Trust Us
                 </h2>
 
-                <div className="grid w-full grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                <MobileCarousel
+                  items={trustCards}
+                  renderItem={(card) => (
+                    <div className="flex flex-col items-center gap-4 rounded-xl bg-white p-6 shadow-soft min-h-[280px] justify-center">
+                      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-brand-ocean-blue/10 text-brand-ocean-blue">
+                        <span className="material-symbols-outlined text-3xl">{card.icon}</span>
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-900">{card.title}</h3>
+                      <p className="text-sm text-gray-600">{card.description}</p>
+                    </div>
+                  )}
+                />
+
+                <div className="hidden w-full grid-cols-1 gap-6 sm:grid-cols-2 lg:grid">
 
                   <div className="flex flex-col items-center gap-4 rounded-xl bg-white p-6 shadow-soft">
                     <div className="flex h-14 w-14 items-center justify-center rounded-full bg-brand-ocean-blue/10 text-brand-ocean-blue">
@@ -196,13 +268,19 @@ export default function About() {
                 </p>
 
                 <div className="mt-2 flex flex-wrap justify-center gap-4">
-                  <button className="flex min-w-[140px] cursor-pointer items-center justify-center rounded-lg h-12 px-6 bg-brand-ocean-blue text-white text-base font-bold shadow-soft transition-transform hover:scale-105">
+                  <Link
+                    to="/services"
+                    className="flex min-w-[140px] cursor-pointer items-center justify-center rounded-lg h-12 px-6 bg-brand-ocean-blue text-white text-base font-bold shadow-soft transition-transform hover:scale-105"
+                  >
                     View Services
-                  </button>
+                  </Link>
   
-                  <button className="flex min-w-[140px] cursor-pointer items-center justify-center rounded-lg h-12 px-6 bg-transparent text-brand-ocean-blue ring-2 ring-brand-ocean-blue transition-transform hover:scale-105 hover:bg-brand-ocean-blue/10">
+                  <Link
+                    to="/contact"
+                    className="flex min-w-[140px] cursor-pointer items-center justify-center rounded-lg h-12 px-6 bg-transparent text-brand-ocean-blue ring-2 ring-brand-ocean-blue transition-transform hover:scale-105 hover:bg-brand-ocean-blue/10"
+                  >
                     Contact Us
-                  </button>
+                  </Link>
                 </div>
               </section>
 
@@ -210,6 +288,59 @@ export default function About() {
           </main>
 
         </div>
+      </div>
+    </div>
+  );
+}
+
+function MobileCarousel({ items, renderItem }) {
+  const trackRef = useRef(null);
+  const [active, setActive] = useState(0);
+
+  useEffect(() => {
+    setActive(0);
+  }, [items.length]);
+
+  function handleScroll() {
+    if (!trackRef.current) return;
+    const width = trackRef.current.clientWidth;
+    setActive(Math.round(trackRef.current.scrollLeft / Math.max(width, 1)));
+  }
+
+  function goTo(index) {
+    if (!trackRef.current) return;
+    trackRef.current.scrollTo({
+      left: index * trackRef.current.clientWidth,
+      behavior: "smooth",
+    });
+    setActive(index);
+  }
+
+  return (
+    <div className="w-full md:hidden">
+      <div
+        ref={trackRef}
+        onScroll={handleScroll}
+        className="flex gap-4 overflow-x-auto snap-x snap-mandatory no-scrollbar"
+      >
+        {items.map((item, index) => (
+          <div key={item.name || item.title || index} className="w-full shrink-0 snap-center">
+            {renderItem(item)}
+          </div>
+        ))}
+      </div>
+      <div className="mt-3 flex items-center justify-center gap-2">
+        {items.map((_, index) => (
+          <button
+            key={index}
+            type="button"
+            onClick={() => goTo(index)}
+            aria-label={`Go to slide ${index + 1}`}
+            className={`h-2.5 rounded-full transition-all ${
+              index === active ? "w-6 bg-brand-ocean-blue" : "w-2.5 bg-gray-300"
+            }`}
+          />
+        ))}
       </div>
     </div>
   );
