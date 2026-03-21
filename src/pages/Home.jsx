@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import heroBg from "../assets/Heroimage_background.jpg";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../firebase";
 import { usePopup } from "../context/PopupContext";
 import { buttonMotion, cardMotion, sectionInView } from "../lib/motion";
+import { usePageImages } from "../hooks/usePageImages";
 
 const services = [
   { icon: "design_services", title: "Turnkey Interior Fit-Out" },
@@ -37,6 +37,11 @@ const whyChooseUs = [
 export default function Home() {
   const MotionLink = motion(Link);
   const { openQuote } = usePopup();
+  const pageImages = usePageImages("home", {
+    heroImage: "",
+    aboutImage:
+      "https://lh3.googleusercontent.com/aida-public/AB6AXuCVrJc7X1JjEuza4-3orPm4rkte8BFsmGWa2Xbk9WvLCqq9buFcXBp5LmKIBN262Kro47zy9WhSP97aAaSbJhqdj_8hZLch66s_PY4qLPq5vmUnkA5y0rA61lgfn0pzyr-MDjOsekvH0slZEDsI1SNBj-8Ndkfh55MCekru1_awX6JT9T61OuyDbBP6DOaVEwiCsNGvjcTOMgX7-RxmtPd4JXjGGCuOfqHeu0iR7muXP07fty4-medrmQEZD0pG3fc59E2E65D3pxd7",
+  });
   const [featuredProjects, setFeaturedProjects] = useState([]);
   const [loadingFeatured, setLoadingFeatured] = useState(true);
 
@@ -74,23 +79,23 @@ export default function Home() {
             <div className="flex flex-col gap-16 md:gap-20 lg:gap-24">
 {/* HERO */}
 <motion.section
-  className="relative flex min-h-[280px] flex-col items-center justify-center overflow-hidden rounded-xl bg-white p-8 text-center shadow-soft md:min-h-[340px]"
+  className="relative flex min-h-[280px] flex-col items-center justify-center overflow-hidden rounded-xl bg-white/85 backdrop-blur-sm p-8 text-center shadow-soft md:min-h-[340px]"
   initial={sectionInView.initial}
   whileInView={sectionInView.whileInView}
   viewport={sectionInView.viewport}
   transition={sectionInView.transition}
 >
-  {/* Background Image */}
-  <div
-    className="absolute inset-0"
-    style={{
-      backgroundImage: `url(${heroBg})`,
-      backgroundSize: "cover",
-      backgroundPosition: "center",
-      opacity: 0.25,
-    }}
-  />
-
+  {pageImages.heroImage ? (
+    <div
+      className="absolute inset-0"
+      style={{
+        backgroundImage: `url(${pageImages.heroImage})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        opacity: 0.22,
+      }}
+    />
+  ) : null}
   {/* Content */}
   <div className="relative flex flex-col items-center gap-4 max-w-4xl">
     <motion.h1
@@ -167,7 +172,7 @@ export default function Home() {
 <div className="w-full px-6 lg:px-8">
   <img
     className="aspect-[4/3] w-full rounded-xl object-cover shadow-soft"
-    src="https://lh3.googleusercontent.com/aida-public/AB6AXuCVrJc7X1JjEuza4-3orPm4rkte8BFsmGWa2Xbk9WvLCqq9buFcXBp5LmKIBN262Kro47zy9WhSP97aAaSbJhqdj_8hZLch66s_PY4qLPq5vmUnkA5y0rA61lgfn0pzyr-MDjOsekvH0slZEDsI1SNBj-8Ndkfh55MCekru1_awX6JT9T61OuyDbBP6DOaVEwiCsNGvjcTOMgX7-RxmtPd4JXjGGCuOfqHeu0iR7muXP07fty4-medrmQEZD0pG3fc59E2E65D3pxd7"
+    src={pageImages.aboutImage}
     alt="About us"
   />
 </div>

@@ -14,6 +14,12 @@ export default function AdminSettings() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [selectedPage, setSelectedPage] = useState("home");
+  const [selectedField, setSelectedField] = useState("heroImage");
+  const [imageUrlInput, setImageUrlInput] = useState("");
+  const [savingImageUrl, setSavingImageUrl] = useState(false);
+  const [imageMessage, setImageMessage] = useState("");
+  const [pageImages, setPageImages] = useState({});
 
   useEffect(() => {
     const settingsRef = doc(db, "siteSettings", "social");
@@ -40,6 +46,21 @@ export default function AdminSettings() {
 
     loadSettings();
   }, []);
+
+  useEffect(() => {
+    async function loadPageImages() {
+      const pageIds = ["home", "about", "services", "projects", "contact"];
+      const next = {};
+      await Promise.all(
+        pageIds.map(async (id) => {
+          const snapshot = await getDoc(doc(db, "pageImages", id));
+          next[id] = snapshot.exists() ? snapshot.data() : {};
+        })
+      );
+      setPageImages(next);
+    }
+    loadPageImages();
+  }, [imageMessage]);
 
   function handleChange(e) {
     const { name, value } = e.target;
@@ -72,12 +93,58 @@ export default function AdminSettings() {
     }
   }
 
+  const pageFieldOptions = {
+    home: [
+      { value: "heroImage", label: "Hero Image" },
+      { value: "aboutImage", label: "About Section Image" },
+    ],
+    about: [
+      { value: "heroImage", label: "Hero Image" },
+      { value: "whoWeAreImage", label: "Who We Are Image" },
+    ],
+    services: [{ value: "heroImage", label: "Hero Image" }],
+    projects: [{ value: "heroImage", label: "Hero Image" }],
+    contact: [{ value: "heroImage", label: "Hero Image" }],
+  };
+
+  useEffect(() => {
+    const first = pageFieldOptions[selectedPage][0]?.value;
+    setSelectedField(first || "heroImage");
+  }, [selectedPage]);
+
+  async function handleImageUrlSave(e) {
+    e.preventDefault();
+    const imageUrl = imageUrlInput.trim();
+    if (!imageUrl) {
+      setImageMessage("Please enter an image URL.");
+      return;
+    }
+
+    setSavingImageUrl(true);
+    setImageMessage("");
+    try {
+      await setDoc(
+        doc(db, "pageImages", selectedPage),
+        { [selectedField]: imageUrl },
+        { merge: true }
+      );
+
+      setImageUrlInput("");
+      setImageMessage("Image URL saved successfully.");
+    } catch (err) {
+      console.error("Saving image URL failed", err);
+      setImageMessage(err?.message || "Failed to save image URL.");
+    } finally {
+      setSavingImageUrl(false);
+    }
+  }
+
   if (loading) {
     return <div className="text-sm text-gray-600">Loading settings...</div>;
   }
 
   return (
-    <div className="space-y-6 max-w-xl">
+    <div className="space-y-6 max-w-2xl">
       <h1 className="text-2xl font-bold text-gray-900">Site Settings</h1>
 
       <section className="rounded-xl bg-white p-4 shadow-soft">
@@ -137,6 +204,74 @@ export default function AdminSettings() {
             className="rounded-lg bg-brand-ocean-blue px-4 py-2 text-sm font-semibold text-white shadow-soft hover:opacity-90 disabled:opacity-60"
           >
             {saving ? "Saving..." : "Save changes"}
+          </button>
+        </form>
+      </section>
+
+      <section className="rounded-xl bg-white p-4 shadow-soft">
+        <h2 className="mb-4 text-lg font-semibold text-gray-900">Page Images</h2>
+        <form onSubmit={handleImageUrlSave} className="space-y-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div>
+              <label className="mb-1 block text-sm font-medium text-gray-700">Page</label>
+              <select
+                value={selectedPage}
+                onChange={(e) => setSelectedPage(e.target.value)}
+                className="h-10 w-full rounded-lg border border-gray-300 px-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-ocean-blue"
+              >
+                <option value="home">home</option>
+                <option value="about">about</option>
+                <option value="services">services</option>
+                <option value="projects">projects</option>
+                <option value="contact">contact</option>
+              </select>
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-gray-700">Section Image</label>
+              <select
+                value={selectedField}
+                onChange={(e) => setSelectedField(e.target.value)}
+                className="h-10 w-full rounded-lg border border-gray-300 px-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-ocean-blue"
+              >
+                {pageFieldOptions[selectedPage].map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">Image URL</label>
+            <input
+              type="url"
+              value={imageUrlInput}
+              onChange={(e) => setImageUrlInput(e.target.value)}
+              placeholder="https://example.com/banner.jpg"
+              className="h-10 w-full rounded-lg border border-gray-300 px-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-ocean-blue"
+            />
+          </div>
+
+          {pageImages[selectedPage]?.[selectedField] && (
+            <div className="rounded-lg border border-gray-200 p-3">
+              <p className="mb-2 text-xs text-gray-600">Current image</p>
+              <img
+                src={pageImages[selectedPage][selectedField]}
+                alt="Current page section"
+                className="h-32 w-full rounded object-cover"
+              />
+            </div>
+          )}
+
+          {imageMessage && <p className="text-sm text-gray-700">{imageMessage}</p>}
+
+          <button
+            type="submit"
+            disabled={savingImageUrl}
+            className="rounded-lg bg-brand-ocean-blue px-4 py-2 text-sm font-semibold text-white shadow-soft hover:opacity-90 disabled:opacity-60"
+          >
+            {savingImageUrl ? "Saving..." : "Save image URL"}
           </button>
         </form>
       </section>

@@ -1,10 +1,13 @@
-import heroBg from "../assets/homepage_hero_bg.jpg";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { buttonMotion, cardMotion, sectionInView } from "../lib/motion";
+import { usePageImages } from "../hooks/usePageImages";
 
 export default function Services() {
   const MotionLink = motion(Link);
+  const pageImages = usePageImages("services", {
+    heroImage: "",
+  });
   return (
     <div className="font-display text-gray-800">
       <div
@@ -25,21 +28,23 @@ export default function Services() {
 
             {/* HERO */}
             <motion.section
-              className="relative flex min-h-[280px] flex-col items-center justify-center overflow-hidden rounded-xl bg-white p-8 text-center shadow-soft md:min-h-[340px]"
+              className="relative flex min-h-[280px] flex-col items-center justify-center overflow-hidden rounded-xl bg-white/85 backdrop-blur-sm p-8 text-center shadow-soft md:min-h-[340px]"
               initial={sectionInView.initial}
               whileInView={sectionInView.whileInView}
               viewport={sectionInView.viewport}
               transition={sectionInView.transition}
             >
-              <div
-                className="absolute inset-0"
-                style={{
-                  backgroundImage: `url(${heroBg})`,
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                  opacity: 0.25,
-                }}
-              />
+              {pageImages.heroImage ? (
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    backgroundImage: `url(${pageImages.heroImage})`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                    opacity: 0.22,
+                  }}
+                />
+              ) : null}
               <div className="relative flex flex-col items-center gap-4 max-w-3xl">
                 <h1 className="text-4xl font-bold leading-tight tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
                   Our Services
