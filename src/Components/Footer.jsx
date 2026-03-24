@@ -1,12 +1,49 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import ZaykenLogo from "../assets/zayken_projects_logo.svg"; 
+import { doc, onSnapshot } from "firebase/firestore";
+import { db } from "../firebase";
+import ZaykenLogo from "../assets/Z1.png";
 import { sectionInView } from "../lib/motion";
 
 export default function Footer() {
-  const facebookUrl = "https://facebook.com";
-  const instagramUrl = "https://instagram.com";
-  const linkedinUrl = "https://linkedin.com";
+  const [socialLinks, setSocialLinks] = useState({
+    facebookUrl: "",
+    instagramUrl: "",
+    linkedinUrl: "",
+  });
+
+  useEffect(() => {
+    const settingsRef = doc(db, "siteSettings", "social");
+    const unsubscribe = onSnapshot(
+      settingsRef,
+      (snapshot) => {
+        if (!snapshot.exists()) {
+          setSocialLinks({
+            facebookUrl: "",
+            instagramUrl: "",
+            linkedinUrl: "",
+          });
+          return;
+        }
+        const data = snapshot.data();
+        setSocialLinks({
+          facebookUrl: data.facebookUrl || "",
+          instagramUrl: data.instagramUrl || "",
+          linkedinUrl: data.linkedinUrl || "",
+        });
+      },
+      () => {
+        setSocialLinks({
+          facebookUrl: "",
+          instagramUrl: "",
+          linkedinUrl: "",
+        });
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
 
   return (
     <motion.footer
@@ -20,17 +57,13 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
 
         <div>
-  {/* Logo + Name */}
+  {/* Logo */}
   <Link to="/" className="flex items-center gap-3 mb-1 text-brand-navy cursor-pointer w-fit">
     <img
       src={ZaykenLogo}
       alt="Zayken Projects Logo"
       className="h-12 w-auto -mt-2"
     />
-
-    <h3 className="font-bold text-xl text-dark-charcoal dark:text-white -ml-5">
-      Zayken <span className="font-light">Projects</span>
-    </h3>
   </Link>
 
   {/* Tagline — brought even closer */}
@@ -113,11 +146,15 @@ export default function Footer() {
 
               {/* Facebook */}
               <a
-                href={facebookUrl}
-                target="_blank"
-                rel="noreferrer"
+                href={socialLinks.facebookUrl || "#"}
+                target={socialLinks.facebookUrl ? "_blank" : undefined}
+                rel={socialLinks.facebookUrl ? "noreferrer" : undefined}
                 aria-label="Zayken Projects on Facebook"
-                className="text-[#1877F2] hover:text-[#145bc0] cursor-pointer transition-transform hover:scale-110"
+                className={`text-[#1877F2] transition-transform ${
+                  socialLinks.facebookUrl
+                    ? "cursor-pointer hover:text-[#145bc0] hover:scale-110"
+                    : "cursor-not-allowed opacity-50"
+                }`}
               >
                 <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M9 8H6v4h3v12h5V12h3.642L18 8h-4V6.333C14 5.378 14.192 5 15.115 5H18V0h-3.808C10.596 0 9 1.583 9 4.615V8z" />
@@ -126,11 +163,15 @@ export default function Footer() {
 
               {/* Instagram */}
               <a
-                href={instagramUrl}
-                target="_blank"
-                rel="noreferrer"
+                href={socialLinks.instagramUrl || "#"}
+                target={socialLinks.instagramUrl ? "_blank" : undefined}
+                rel={socialLinks.instagramUrl ? "noreferrer" : undefined}
                 aria-label="Zayken Projects on Instagram"
-                className="text-[#E1306C] hover:text-[#c1265a] cursor-pointer transition-transform hover:scale-110"
+                className={`text-[#E1306C] transition-transform ${
+                  socialLinks.instagramUrl
+                    ? "cursor-pointer hover:text-[#c1265a] hover:scale-110"
+                    : "cursor-not-allowed opacity-50"
+                }`}
               >
                 <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M7 2C4.243 2 2 4.243 2 7v10c0 2.757 2.243 5 5 5h10c2.757 0 5-2.243 5-5V7c0-2.757-2.243-5-5-5H7zm0 2h10c1.654 0 3 1.346 3 3v10c0 1.654-1.346 3-3 3H7c-1.654 0-3-1.346-3-3V7c0-1.654 1.346-3 3-3zm5 3.5A4.505 4.505 0 007.5 12 4.505 4.505 0 0012 16.5 4.505 4.505 0 0016.5 12 4.505 4.505 0 0012 7.5zm0 2A2.503 2.503 0 0114.5 12 2.503 2.503 0 0112 14.5 2.503 2.503 0 019.5 12 2.503 2.503 0 0112 9.5zM17.25 6.5a1.25 1.25 0 11-2.5 0 1.25 1.25 0 012.5 0z" />
@@ -139,11 +180,15 @@ export default function Footer() {
 
               {/* LinkedIn */}
               <a
-                href={linkedinUrl}
-                target="_blank"
-                rel="noreferrer"
+                href={socialLinks.linkedinUrl || "#"}
+                target={socialLinks.linkedinUrl ? "_blank" : undefined}
+                rel={socialLinks.linkedinUrl ? "noreferrer" : undefined}
                 aria-label="Zayken Projects on LinkedIn"
-                className="text-[#0A66C2] hover:text-[#084f96] cursor-pointer transition-transform hover:scale-110"
+                className={`text-[#0A66C2] transition-transform ${
+                  socialLinks.linkedinUrl
+                    ? "cursor-pointer hover:text-[#084f96] hover:scale-110"
+                    : "cursor-not-allowed opacity-50"
+                }`}
               >
                 <svg
                   className="h-6 w-6"

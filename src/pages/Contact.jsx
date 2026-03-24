@@ -19,6 +19,7 @@ export default function Contact() {
   const [touched, setTouched] = useState({});
   const [errors, setErrors] = useState({});
   const [toast, setToast] = useState({ show: false, msg: "", type: "info" });
+  const [submitting, setSubmitting] = useState(false);
 
   // -------------------------
   // VALIDATORS (Same logic style as Quote Popup)
@@ -84,6 +85,7 @@ export default function Contact() {
   // -------------------------
   async function handleSubmit(e) {
     e.preventDefault();
+    if (submitting) return;
 
     const newErrors = runValidationForAll();
     // Mark all validated fields as touched so their error messages show
@@ -98,6 +100,7 @@ export default function Contact() {
     if (Object.keys(newErrors).length > 0) return;
 
     try {
+      setSubmitting(true);
       const res = await fetch(
         "https://zayken-backend.onrender.com/contact-message",
         {
@@ -126,6 +129,8 @@ export default function Contact() {
     } catch (err) {
       console.error(err);
       showToast("Server error. Please try again later.", "error");
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -310,11 +315,13 @@ export default function Contact() {
                     {/* Submit */}
                     <button
   type="submit"
+  onClick={handleSubmit}
+  disabled={submitting}
   className="flex w-full md:w-auto items-center justify-center rounded-lg h-12 px-8 
              bg-brand-ocean-blue text-white text-lg font-bold shadow-lg 
-             transition-transform duration-200 hover:scale-105 hover:brightness-110"
+             transition-transform duration-200 hover:scale-105 hover:brightness-110 disabled:opacity-70 touch-manipulation"
 >
-  Submit
+  {submitting ? "Submitting..." : "Submit"}
 </button>
                   </form>
                 </div>
